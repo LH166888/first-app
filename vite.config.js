@@ -16,4 +16,25 @@ export default defineConfig({
     strictPort: true,
     open: true,
   },
+  build: {
+    // 面向现代浏览器，产物更小、无多余兼容代码
+    target: 'es2018',
+    // 使用 esbuild 压缩（默认，速度快）
+    minify: 'esbuild',
+    // 提高分包阈值告警门限，避免噪音
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        // 将第三方依赖拆分为独立 chunk，利于浏览器长期缓存
+        manualChunks: {
+          vue: ['vue', 'vue-router'],
+          chart: ['chart.js'],
+        },
+      },
+    },
+  },
+  // 生产环境移除 console 和 debugger，减小体积
+  esbuild: {
+    drop: ['console', 'debugger'],
+  },
 })
