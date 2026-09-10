@@ -1,19 +1,54 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import CarThumb from '../components/CarThumb.vue'
 import ChartCanvas from '../components/ChartCanvas.vue'
 import LoginToast from '../components/LoginToast.vue'
-import { cars, YEAR, ENERGY_LABEL } from '../data/cars'
+import { YEAR, ENERGY_LABEL } from '../data/constants'
+import { getCar, listCars } from '../api/cars'
 import { store } from '../store'
 
 const route = useRoute()
 const router = useRouter()
 const toastRef = ref(null)
 
-const car = computed(() => cars.find((c) => c.id === route.params.id))
+const car = ref(null)
+const loading = ref(true)
+// 全量列表仅用于计算当前车型的销量排名（数据量小，可接受再拉一次）
+const allCars = ref([])
+
+async function loadCar(id) {
+  loading.value = true
+  car.value = null
+  try {
+    car.value = await getCar(id)
+    if (car.value) store.cacheCars([car.value])
+  } catch {
+    car.value = null // 404 或出错 → 显示未找到空态
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(
+  () => route.params.id,
+  (id) => {
+    if (id) loadCar(id)
+  },
+  { immediate: true }
+)
+
+// 拉一次列表用于名次计算（失败则不显示名次）
+listCars()
+  .then((list) => {
+    allCars.value = list
+    store.cacheCars(list)
+  })
+  .catch(() => {})
+
 const rank = computed(() => {
-  const sorted = [...cars].sort((a, b) => b.sales - a.sales)
+  if (!allCars.value.length) return 0
+  const sorted = [...allCars.value].sort((a, b) => b.sales - a.sales)
   return sorted.findIndex((c) => c.id === route.params.id) + 1
 })
 const priceText = computed(() => {
@@ -28,7 +63,7 @@ const trendData = computed(() => ({
   datasets: [
     {
       label: '月销量',
-      data: car.value.trend,
+      data: car.value ? car.value.trend : [],
       borderColor: '#00e5ff',
       backgroundColor: 'rgba(0,229,255,0.12)',
       fill: true,
@@ -49,14 +84,18 @@ const trendOptions = {
   },
 }
 
-function onFav() {
-  const r = store.toggleFavorite(car.value.id)
+async function onFav() {
+  const r = await store.toggleFavorite(car.value.id)
   if (r.needLogin) toastRef.value.show()
 }
 </script>
 
 <template>
-  <div v-if="car" class="container page">
+  <div v-if="loading" class="container page">
+    <div class="card empty">车型详情加载中…</div>
+  </div>
+
+  <div v-else-if="car" class="container page">
     <button class="btn ghost back" @click="router.back()">← 返回</button>
 
     <section class="card head">
@@ -74,7 +113,7 @@ function onFav() {
             <div class="k">官方指导价</div>
           </div>
           <div class="stat">
-            <div class="v">No.{{ rank }}</div>
+            <div class="v">{{ rank ? 'No.' + rank : '—' }}</div>
             <div class="k">{{ YEAR }} 销量排名</div>
           </div>
           <div class="stat">

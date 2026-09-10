@@ -1,19 +1,26 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import CarRow from '../components/CarRow.vue'
 import CompareBar from '../components/CompareBar.vue'
 import LoginToast from '../components/LoginToast.vue'
-import { cars } from '../data/cars'
 import { store } from '../store'
 
 const toastRef = ref(null)
+
+// 进入收藏页时从后端刷新一次（同时会把收藏车型写入缓存）
+onMounted(() => {
+  if (store.user) store.loadFavorites()
+})
+
 const list = computed(() =>
   store.favorites
-    .map((id) => cars.find((c) => c.id === id))
+    .map((id) => store.getCachedCar(id))
     .filter(Boolean)
     .sort((a, b) => b.sales - a.sales)
 )
-const maxSales = computed(() => Math.max(...cars.map((c) => c.sales)))
+const maxSales = computed(() =>
+  list.value.length ? Math.max(...list.value.map((c) => c.sales)) : 1
+)
 </script>
 
 <template>

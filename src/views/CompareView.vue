@@ -2,13 +2,13 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import CarThumb from '../components/CarThumb.vue'
-import { cars, ENERGY_LABEL } from '../data/cars'
+import { ENERGY_LABEL } from '../data/constants'
 import { store } from '../store'
 
 const router = useRouter()
 
 const list = computed(() =>
-  store.compareIds.map((id) => cars.find((c) => c.id === id)).filter(Boolean)
+  store.compareIds.map((id) => store.getCachedCar(id)).filter(Boolean)
 )
 
 // 收集所有配置项（并集，保持首个车型顺序优先）

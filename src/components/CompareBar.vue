@@ -2,11 +2,10 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { store } from '../store'
-import { cars } from '../data/cars'
 
 const router = useRouter()
 const selected = computed(() =>
-  store.compareIds.map((id) => cars.find((c) => c.id === id)).filter(Boolean)
+  store.compareIds.map((id) => store.getCachedCar(id)).filter(Boolean)
 )
 function goCompare() {
   if (selected.value.length >= 2) router.push({ name: 'compare' })

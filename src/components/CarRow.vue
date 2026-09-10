@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import CarThumb from './CarThumb.vue'
 import { store } from '../store'
-import { ENERGY_LABEL } from '../data/cars'
+import { ENERGY_LABEL } from '../data/constants'
 
 const props = defineProps({
   car: { type: Object, required: true },
@@ -23,9 +23,9 @@ const medal = computed(() => ({ 1: 'gold', 2: 'silver', 3: 'bronze' })[props.ran
 function goDetail() {
   router.push({ name: 'car', params: { id: props.car.id } })
 }
-function onFav(e) {
+async function onFav(e) {
   e.stopPropagation()
-  const r = store.toggleFavorite(props.car.id)
+  const r = await store.toggleFavorite(props.car.id)
   if (r.needLogin) emit('need-login')
 }
 function onCompare(e) {

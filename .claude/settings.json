@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(php artisan *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\gj\\first-app\\backend\\app\\Http\\Controllers\\Api"
     ]
   }
 }

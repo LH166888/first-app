@@ -1,20 +1,41 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import CarRow from '../components/CarRow.vue'
 import ChartCanvas from '../components/ChartCanvas.vue'
 import CompareBar from '../components/CompareBar.vue'
 import LoginToast from '../components/LoginToast.vue'
 import {
-  cars,
   YEAR,
   LEVELS,
   ENERGY_TYPES,
   PRICE_RANGES,
-  BRANDS,
-} from '../data/cars'
+  deriveBrands,
+} from '../data/constants'
+import { listCars } from '../api/cars'
+import { store } from '../store'
 
 const route = useRoute()
+
+// 车型数据改为从后端接口获取
+const cars = ref([])
+const loading = ref(true)
+const error = ref('')
+
+onMounted(async () => {
+  try {
+    const list = await listCars()
+    cars.value = list
+    store.cacheCars(list) // 填充按 id 缓存，供对比/收藏页复用
+  } catch (e) {
+    error.value = '车型数据加载失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
+})
+
+// 品牌选项由接口返回的车型派生
+const brands = computed(() => deriveBrands(cars.value))
 
 const keyword = ref(route.query.q || '')
 watch(
@@ -30,7 +51,7 @@ const brand = ref('all')
 const toastRef = ref(null)
 
 const filtered = computed(() => {
-  return cars
+  return cars.value
     .filter((c) => {
       if (energy.value === 'new' && c.energy === 'fuel') return false
       if (['ev', 'phev', 'fuel'].includes(energy.value) && c.energy !== energy.value)
@@ -55,7 +76,9 @@ const filtered = computed(() => {
     .sort((a, b) => b.sales - a.sales)
 })
 
-const maxSales = computed(() => Math.max(...cars.map((c) => c.sales)))
+const maxSales = computed(() =>
+  cars.value.length ? Math.max(...cars.value.map((c) => c.sales)) : 1
+)
 
 function resetFilters() {
   energy.value = 'all'
@@ -69,7 +92,7 @@ function resetFilters() {
 const overviewData = computed(() => {
   let nev = 0
   let fuel = 0
-  for (const c of cars) {
+  for (const c of cars.value) {
     if (c.energy === 'fuel') fuel += c.sales
     else nev += c.sales
   }
@@ -98,7 +121,7 @@ const overviewOptions = {
 }
 
 const topData = computed(() => {
-  const top = [...cars].sort((a, b) => b.sales - a.sales).slice(0, 8)
+  const top = [...cars.value].sort((a, b) => b.sales - a.sales).slice(0, 8)
   const colorMap = { ev: '#00e5ff', phev: '#6ee7a8', fuel: '#ffb454' }
   return {
     labels: top.map((c) => c.name.replace(/^.*? /, '')),
@@ -177,7 +200,7 @@ const topOptions = {
         </select>
         <select v-model="brand">
           <option value="all">全部品牌</option>
-          <option v-for="b in BRANDS" :key="b" :value="b">{{ b }}</option>
+          <option v-for="b in brands" :key="b" :value="b">{{ b }}</option>
         </select>
         <button class="btn ghost reset" @click="resetFilters">重置</button>
       </div>
@@ -191,17 +214,21 @@ const topOptions = {
 
     <!-- 榜单列表 -->
     <section class="list">
-      <CarRow
-        v-for="(c, i) in filtered"
-        :key="c.id"
-        :car="c"
-        :rank="i + 1"
-        :max-sales="maxSales"
-        @need-login="toastRef.show()"
-      />
-      <div v-if="!filtered.length" class="empty card">
-        没有符合条件的车型，试试放宽筛选条件～
-      </div>
+      <div v-if="loading" class="empty card">车型数据加载中…</div>
+      <div v-else-if="error" class="empty card">{{ error }}</div>
+      <template v-else>
+        <CarRow
+          v-for="(c, i) in filtered"
+          :key="c.id"
+          :car="c"
+          :rank="i + 1"
+          :max-sales="maxSales"
+          @need-login="toastRef.show()"
+        />
+        <div v-if="!filtered.length" class="empty card">
+          没有符合条件的车型，试试放宽筛选条件～
+        </div>
+      </template>
     </section>
 
     <CompareBar />

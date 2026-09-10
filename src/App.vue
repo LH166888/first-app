@@ -2,11 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { store, favoriteCount, compareCount } from './store'
+import AuthModal from './components/AuthModal.vue'
 
 const router = useRouter()
 const keyword = ref('')
 const showLogin = ref(false)
-const loginName = ref('')
 
 function doSearch() {
   router.push({ name: 'ranking', query: { q: keyword.value || undefined } })
@@ -14,11 +14,6 @@ function doSearch() {
 
 function openLogin() {
   showLogin.value = true
-}
-function submitLogin() {
-  store.login(loginName.value.trim())
-  showLogin.value = false
-  loginName.value = ''
 }
 </script>
 
@@ -71,18 +66,8 @@ function submitLogin() {
     </p>
   </footer>
 
-  <!-- 登录弹窗（演示：仅本地存储） -->
-  <div v-if="showLogin" class="modal-mask" @click.self="showLogin = false">
-    <div class="modal card">
-      <h3>登录</h3>
-      <p class="hint">演示登录，无需密码，仅保存在本机浏览器。登录后可收藏车型。</p>
-      <input v-model="loginName" placeholder="给自己起个昵称" @keyup.enter="submitLogin" />
-      <div class="modal-actions">
-        <button class="btn ghost" @click="showLogin = false">取消</button>
-        <button class="btn primary" @click="submitLogin">进入</button>
-      </div>
-    </div>
-  </div>
+  <!-- 登录 / 注册弹窗 -->
+  <AuthModal v-if="showLogin" @close="showLogin = false" />
 </template>
 
 <style scoped>
@@ -183,49 +168,6 @@ main {
   color: var(--text-mute);
   font-size: 12px;
   text-align: center;
-}
-
-/* 弹窗 */
-.modal-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal {
-  width: 100%;
-  max-width: 380px;
-  padding: 24px;
-}
-.modal h3 {
-  margin: 0 0 8px;
-}
-.modal .hint {
-  color: var(--text-mute);
-  font-size: 13px;
-  margin: 0 0 16px;
-}
-.modal input {
-  width: 100%;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: var(--text);
-  outline: none;
-  margin-bottom: 16px;
-}
-.modal input:focus {
-  border-color: var(--accent);
-}
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
 }
 
 @media (max-width: 720px) {
