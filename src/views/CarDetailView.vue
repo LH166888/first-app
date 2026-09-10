@@ -14,8 +14,23 @@ const toastRef = ref(null)
 
 const car = ref(null)
 const loading = ref(true)
-// 全量列表仅用于计算当前车型的销量排名（数据量小，可接受再拉一次）
+// 全量列表仅用于计算销量排名：优先复用榜单页已缓存的全量列表，缓存为空（直进/刷新详情页）时才补拉一次
 const allCars = ref([])
+
+async function loadRank() {
+  if (store.carList.length) {
+    allCars.value = store.carList
+    return
+  }
+  try {
+    const list = await listCars()
+    allCars.value = list
+    store.cacheCars(list)
+    store.cacheCarList(list)
+  } catch {
+    // 拉取失败则不显示名次
+  }
+}
 
 async function loadCar(id) {
   loading.value = true
@@ -38,13 +53,8 @@ watch(
   { immediate: true }
 )
 
-// 拉一次列表用于名次计算（失败则不显示名次）
-listCars()
-  .then((list) => {
-    allCars.value = list
-    store.cacheCars(list)
-  })
-  .catch(() => {})
+// 复用缓存或按需补拉全量列表用于名次计算
+loadRank()
 
 const rank = computed(() => {
   if (!allCars.value.length) return 0

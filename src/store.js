@@ -25,10 +25,16 @@ export const store = reactive({
   compareIds: [],
   // 按 id 缓存的车型对象，供对比栏/收藏页等按 id 取车（首次拉列表后填充）
   carsById: {},
+  // 全量车型列表缓存（仅在拉到完整榜单时填充，用于详情页复用名次计算，避免重复请求）
+  carList: [],
 
   // ---- 车型缓存 ----
   cacheCars(list) {
     for (const c of list) this.carsById[c.id] = c
+  },
+  // 缓存完整榜单列表（区别于 cacheCars：这表示"已拥有全量数据"）
+  cacheCarList(list) {
+    this.carList = list
   },
   getCachedCar(id) {
     return this.carsById[id] || null

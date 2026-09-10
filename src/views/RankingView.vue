@@ -27,6 +27,7 @@ onMounted(async () => {
     const list = await listCars()
     cars.value = list
     store.cacheCars(list) // 填充按 id 缓存，供对比/收藏页复用
+    store.cacheCarList(list) // 记录"已拥有全量列表"，供详情页复用名次计算
   } catch (e) {
     error.value = '车型数据加载失败，请稍后重试'
   } finally {
