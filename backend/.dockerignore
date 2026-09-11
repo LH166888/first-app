@@ -1,0 +1,40 @@
+# 构建上下文排除项：减小传输体积，且避免把本机密钥/本地依赖带进镜像
+
+# 依赖（vendor 由 Dockerfile 里 composer 阶段重新装）
+/vendor
+/node_modules
+
+# 环境文件：生产密钥由 Render 环境变量注入，绝不打进镜像
+.env
+.env.*
+!.env.production.example
+
+# 版本控制与编辑器
+.git
+.gitignore
+.gitattributes
+.idea
+.vscode
+.fleet
+.nova
+.zed
+
+# 测试与本地工具产物
+/tests
+/phpunit.xml
+.phpunit.result.cache
+/.phpunit.cache
+.phpactor.json
+/auth.json
+
+# 日志与构建产物
+*.log
+/storage/logs/*
+/storage/pail
+/storage/*.key
+/public/build
+/public/hot
+/public/storage
+
+# 注意：不要排除 docker/ 与 Dockerfile ——
+# Dockerfile 里 COPY docker/apache.conf、chmod docker/start.sh 需要它们在构建上下文中。
