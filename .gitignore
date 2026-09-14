@@ -21,6 +21,9 @@ dist-ssr/
 .env
 .env.*
 !.env.example
+# 例外：前端生产 API 地址非密钥（VITE_ 变量本就会编进公开 JS 包），
+# 提交它让本地/Vercel 预览/生产读同一份，无需在 Vercel 后台单独维护
+!.env.production
 
 # 测试覆盖率
 coverage/
