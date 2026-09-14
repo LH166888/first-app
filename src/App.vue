@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { store, favoriteCount, compareCount } from './store'
 import AuthModal from './components/AuthModal.vue'
+// Vercel Web Analytics：客户端埋点，配合 vue-router 自动按路由上报访问
+import { Analytics } from '@vercel/analytics/vue'
 
 const router = useRouter()
 const keyword = ref('')
@@ -68,6 +70,9 @@ function openLogin() {
 
   <!-- 登录 / 注册弹窗 -->
   <AuthModal v-if="showLogin" @close="showLogin = false" />
+
+  <!-- Vercel 访问统计（无可见 UI，仅加载埋点脚本） -->
+  <Analytics />
 </template>
 
 <style scoped>
