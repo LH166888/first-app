@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { store, favoriteCount, compareCount } from './store'
+import { Analytics } from '@vercel/analytics/vue'
 import AuthModal from './components/AuthModal.vue'
 
 const router = useRouter()
@@ -18,6 +19,7 @@ function openLogin() {
 </script>
 
 <template>
+  <Analytics />
   <header class="topbar">
     <div class="container bar-inner">
       <router-link to="/" class="logo">
