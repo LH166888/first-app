@@ -44,8 +44,9 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Apache：开重写模块（public/.htaccess 的前端控制器重写要用）
-RUN a2enmod rewrite
+# Apache 模块：rewrite（public/.htaccess 前端控制器重写）、
+# headers（apache.conf 里给静态资源设 Cache-Control 的 Header 指令需要它）
+RUN a2enmod rewrite headers
 
 # Apache 站点配置：DocumentRoot 指向 public/，允许 .htaccess 覆盖
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf

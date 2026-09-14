@@ -4,6 +4,11 @@
 /vendor
 /node_modules
 
+# 包发现/服务缓存：勿把本地(含 dev 依赖)的缓存打进镜像，
+# 否则 --no-dev 生产镜像会因引用 dev 包(如 laravel/pail)启动崩溃；
+# bootstrap/cache/ 目录仍保留(.gitignore 不排除)，运行时按线上依赖自动重建。
+/bootstrap/cache/*.php
+
 # 环境文件：生产密钥由 Render 环境变量注入，绝不打进镜像
 .env
 .env.*
