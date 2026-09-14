@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { store, favoriteCount, compareCount } from './store'
 import AuthModal from './components/AuthModal.vue'
+import { Analytics } from '@vercel/analytics/vue'
 
 const router = useRouter()
 const keyword = ref('')
@@ -68,6 +69,9 @@ function openLogin() {
 
   <!-- 登录 / 注册弹窗 -->
   <AuthModal v-if="showLogin" @close="showLogin = false" />
+
+  <!-- Vercel Web Analytics -->
+  <Analytics />
 </template>
 
 <style scoped>
