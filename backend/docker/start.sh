@@ -19,6 +19,15 @@ php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 
+# Render 的 Secret File 挂在 /etc/secrets/ 下，属主 root、权限收紧，
+# Apache 工作进程(www-data)读不到 → 运行时连库报 "failed loading cafile stream"。
+# 启动脚本以 root 身份运行，这里把 CA 复制到 www-data 可读的 storage 目录并放开权限，
+# 再让 MYSQL_ATTR_SSL_CA 指向复制后的路径（见 Render 环境变量）。
+echo "[start] 复制 Aiven CA 证书到 www-data 可读目录..."
+mkdir -p /var/www/html/storage/certs
+cp /etc/secrets/aiven-ca.pem /var/www/html/storage/certs/aiven-ca.pem
+chmod 644 /var/www/html/storage/certs/aiven-ca.pem
+
 # 注意：不做 route:cache —— routes/api.php 的 /user 与 web.php 首页是闭包路由，
 # route:cache 遇闭包会报「Unable to prepare route ... Uses Closure」，配合 set -e 会让容器启动崩溃。
 # config:cache / view:cache 无此问题，正常生成。
