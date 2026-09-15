@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    // 百度智能云 OCR（身份证识别）：Key 走 env，真实值不进代码库
+    'baidu_ocr' => [
+        'api_key' => env('BAIDU_OCR_API_KEY'),
+        'secret_key' => env('BAIDU_OCR_SECRET_KEY'),
+    ],
+
 ];

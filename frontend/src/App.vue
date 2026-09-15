@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { store, favoriteCount, compareCount } from './store'
 import AuthModal from './components/AuthModal.vue'
@@ -9,6 +9,8 @@ import { Analytics } from '@vercel/analytics/vue'
 const router = useRouter()
 const keyword = ref('')
 const showLogin = ref(false)
+const showTools = ref(false)
+const toolsRef = ref(null)
 
 function doSearch() {
   router.push({ name: 'ranking', query: { q: keyword.value || undefined } })
@@ -17,6 +19,23 @@ function doSearch() {
 function openLogin() {
   showLogin.value = true
 }
+
+// 点击下拉外部时收起「工具」菜单
+function onDocClick(e) {
+  if (toolsRef.value && !toolsRef.value.contains(e.target)) {
+    showTools.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', onDocClick)
+  // 路由守卫拦下未登录访问工具页时会派发此事件，这里顺势唤起登录弹窗
+  window.addEventListener('auth:need-login', openLogin)
+})
+onUnmounted(() => {
+  document.removeEventListener('click', onDocClick)
+  window.removeEventListener('auth:need-login', openLogin)
+})
 </script>
 
 <template>
@@ -45,6 +64,21 @@ function openLogin() {
           收藏
           <span v-if="favoriteCount" class="dot">{{ favoriteCount }}</span>
         </router-link>
+        <!-- 工具下拉：仅登录后可见 -->
+        <div v-if="store.user" ref="toolsRef" class="dropdown">
+          <button class="nav-link tools-btn" @click.stop="showTools = !showTools">
+            工具 <i class="caret" :class="{ up: showTools }">▾</i>
+          </button>
+          <div v-if="showTools" class="menu">
+            <router-link
+              to="/tools/idcard"
+              class="menu-item"
+              @click="showTools = false"
+            >
+              🪪 身份证识别
+            </router-link>
+          </div>
+        </div>
         <template v-if="store.user">
           <span class="user">👤 {{ store.user.name }}</span>
           <button class="btn ghost" @click="store.logout()">退出</button>
@@ -164,6 +198,58 @@ function openLogin() {
 .user {
   font-size: 14px;
   color: var(--text-dim);
+}
+
+/* 工具下拉 */
+.dropdown {
+  position: relative;
+}
+.tools-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tools-btn:hover {
+  color: var(--accent);
+}
+.caret {
+  font-style: normal;
+  font-size: 10px;
+  transition: transform 0.15s;
+}
+.caret.up {
+  transform: rotate(180deg);
+}
+.menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 160px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  z-index: 60;
+}
+.menu-item {
+  display: block;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-dim);
+  transition: all 0.15s;
+}
+.menu-item:hover {
+  background: var(--panel-2);
+  color: var(--accent);
 }
 main {
   min-height: calc(100vh - 64px - 80px);

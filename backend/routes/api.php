@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\IdCardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,4 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/favorites', [FavoriteController::class, 'index']);
     Route::post('/favorites', [FavoriteController::class, 'store']);
     Route::delete('/favorites/{carId}', [FavoriteController::class, 'destroy']);
+
+    // 工具：身份证识别（图片与文字均不落盘、不落库）
+    Route::post('/tools/idcard/recognize', [IdCardController::class, 'recognize']);
 });
