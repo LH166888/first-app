@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import CarRow from '../components/CarRow.vue'
 import ChartCanvas from '../components/ChartCanvas.vue'
 import CompareBar from '../components/CompareBar.vue'
-import LoginToast from '../components/LoginToast.vue'
+import LoginToast from '../../../shared/components/LoginToast.vue'
 import {
   YEAR,
   LEVELS,
@@ -13,7 +13,7 @@ import {
   deriveBrands,
 } from '../data/constants'
 import { listCars } from '../api/cars'
-import { store } from '../store'
+import { store } from '../../../shared/store'
 
 const route = useRoute()
 

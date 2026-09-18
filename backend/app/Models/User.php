@@ -55,4 +55,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Favorite::class);
     }
+
+    /**
+     * 用户创建的菜品（dishes 表）。
+     */
+    public function dishes(): HasMany
+    {
+        return $this->hasMany(Dish::class);
+    }
 }
