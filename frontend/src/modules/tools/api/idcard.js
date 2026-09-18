@@ -1,4 +1,4 @@
-import client from './client'
+import client from '../../../shared/api/client'
 
 // 身份证识别（需登录）。multipart 上传图片，后端调百度 OCR 返回摆正裁剪图 + 结构化字段。
 // side: 'front'(默认,人像面) | 'back'(国徽面)。

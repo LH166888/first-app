@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import CarThumb from './CarThumb.vue'
-import { store } from '../store'
+import { store } from '../../../shared/store'
 import { ENERGY_LABEL } from '../data/constants'
 
 const props = defineProps({
@@ -21,7 +21,7 @@ const priceText = computed(() => {
 const medal = computed(() => ({ 1: 'gold', 2: 'silver', 3: 'bronze' })[props.rank] || '')
 
 function goDetail() {
-  router.push({ name: 'car', params: { id: props.car.id } })
+  router.push({ name: 'car-detail', params: { id: props.car.id } })
 }
 async function onFav(e) {
   e.stopPropagation()

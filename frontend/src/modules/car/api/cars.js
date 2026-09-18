@@ -1,4 +1,4 @@
-import client from './client'
+import client from '../../../shared/api/client'
 
 // 车型列表。params 可含 { energy, level, brand, keyword }，后端默认按销量降序。
 // 后端返回 { data: [...], total }，这里直接返回车型数组。

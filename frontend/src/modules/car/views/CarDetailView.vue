@@ -3,10 +3,10 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import CarThumb from '../components/CarThumb.vue'
 import ChartCanvas from '../components/ChartCanvas.vue'
-import LoginToast from '../components/LoginToast.vue'
+import LoginToast from '../../../shared/components/LoginToast.vue'
 import { YEAR, ENERGY_LABEL } from '../data/constants'
 import { getCar, listCars } from '../api/cars'
-import { store } from '../store'
+import { store } from '../../../shared/store'
 
 const route = useRoute()
 const router = useRouter()
@@ -171,7 +171,7 @@ async function onFav() {
   </div>
 
   <div v-else class="container page">
-    <div class="card empty">未找到该车型。<router-link to="/">返回榜单</router-link></div>
+    <div class="card empty">未找到该车型。<router-link to="/cars">返回榜单</router-link></div>
   </div>
 </template>
 

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import CarThumb from '../components/CarThumb.vue'
 import { ENERGY_LABEL } from '../data/constants'
-import { store } from '../store'
+import { store } from '../../../shared/store'
 
 const router = useRouter()
 
@@ -35,7 +35,7 @@ function allSame(k) {
   <div class="container page">
     <div class="topline">
       <h1>车型对比</h1>
-      <button class="btn ghost" @click="router.push('/')">← 返回榜单</button>
+      <button class="btn ghost" @click="router.push('/cars')">← 返回榜单</button>
     </div>
 
     <div v-if="list.length < 2" class="card empty">
@@ -51,7 +51,7 @@ function allSame(k) {
             <th v-for="c in list" :key="c.id">
               <div class="col-head">
                 <CarThumb :car="c" :size="56" />
-                <router-link :to="{ name: 'car', params: { id: c.id } }" class="cname">
+                <router-link :to="{ name: 'car-detail', params: { id: c.id } }" class="cname">
                   {{ c.name }}
                 </router-link>
                 <span class="badge" :class="c.energy">{{ ENERGY_LABEL[c.energy] }}</span>

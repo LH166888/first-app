@@ -1,31 +1,12 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import RankingView from './views/RankingView.vue'
-import { store } from './store'
+import { store } from './shared/store'
+import homeRoutes from './modules/home/routes'
+import carRoutes from './modules/car/routes'
+import toolsRoutes from './modules/tools/routes'
+import menuRoutes from './modules/menu/routes'
 
-const routes = [
-  { path: '/', name: 'ranking', component: RankingView },
-  {
-    path: '/car/:id',
-    name: 'car',
-    component: () => import('./views/CarDetailView.vue'),
-  },
-  {
-    path: '/compare',
-    name: 'compare',
-    component: () => import('./views/CompareView.vue'),
-  },
-  {
-    path: '/favorites',
-    name: 'favorites',
-    component: () => import('./views/FavoritesView.vue'),
-  },
-  {
-    path: '/tools/idcard',
-    name: 'idcard',
-    component: () => import('./views/IdCardView.vue'),
-    meta: { requiresAuth: true },
-  },
-]
+// 平台外壳只负责汇总各业务模块的路由，模块内部路径与命名由各自 routes.js 决定。
+const routes = [...homeRoutes, ...carRoutes, ...toolsRoutes, ...menuRoutes]
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -35,11 +16,11 @@ const router = createRouter({
   },
 })
 
-// 需登录路由的守卫：未登录直接弹回首页，并唤起登录弹窗（App.vue 监听此事件）
+// 需登录路由的守卫：未登录弹回门户首页，并唤起登录弹窗（App.vue 监听此事件）
 router.beforeEach((to) => {
   if (to.meta.requiresAuth && !store.user) {
     window.dispatchEvent(new CustomEvent('auth:need-login'))
-    return { name: 'ranking' }
+    return { name: 'home' }
   }
 })
 

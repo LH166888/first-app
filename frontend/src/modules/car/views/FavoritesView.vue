@@ -2,8 +2,8 @@
 import { computed, ref, onMounted } from 'vue'
 import CarRow from '../components/CarRow.vue'
 import CompareBar from '../components/CompareBar.vue'
-import LoginToast from '../components/LoginToast.vue'
-import { store } from '../store'
+import LoginToast from '../../../shared/components/LoginToast.vue'
+import { store } from '../../../shared/store'
 
 const toastRef = ref(null)
 
@@ -31,7 +31,7 @@ const maxSales = computed(() =>
       登录后即可收藏心仪车型。点击右上角「登录」开始吧～
     </div>
     <div v-else-if="!list.length" class="card empty">
-      还没有收藏车型。去<router-link to="/">榜单</router-link>点击 ☆ 收藏喜欢的车吧～
+      还没有收藏车型。去<router-link to="/cars">榜单</router-link>点击 ☆ 收藏喜欢的车吧～
     </div>
     <section v-else class="list">
       <CarRow

@@ -1,14 +1,14 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { store } from '../store'
+import { store } from '../../../shared/store'
 
 const router = useRouter()
 const selected = computed(() =>
   store.compareIds.map((id) => store.getCachedCar(id)).filter(Boolean)
 )
 function goCompare() {
-  if (selected.value.length >= 2) router.push({ name: 'compare' })
+  if (selected.value.length >= 2) router.push({ name: 'car-compare' })
 }
 </script>
 
