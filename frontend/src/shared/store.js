@@ -2,6 +2,7 @@ import { reactive, computed, watch } from 'vue'
 import * as authApi from './api/auth'
 import * as favApi from './api/favorites'
 import { TOKEN_KEY } from './api/client'
+import { clearAllCache } from './api/cache'
 
 const USER_KEY = 'chebang_user'
 
@@ -124,6 +125,8 @@ export const store = reactive({
     this.token = null
     this.favorites = []
     localStorage.removeItem(TOKEN_KEY)
+    // 清空接口内存缓存，避免换账号后看到上一个账号的菜单/发现页数据
+    clearAllCache()
   },
 })
 

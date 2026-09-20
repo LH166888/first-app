@@ -5,26 +5,43 @@ import DishCard from '../components/DishCard.vue'
 
 const dishes = ref([])
 const loading = ref(true)
+const refreshing = ref(false)
 
-onMounted(async () => {
+// force=true 跳过缓存强拉最新（手动刷新按钮用）
+async function load(force = false) {
+  if (force) refreshing.value = true
   try {
-    const res = await getMyDishes()
+    const res = await getMyDishes({ force })
     dishes.value = res.dishes || []
   } catch (e) {
     console.error('加载菜品失败:', e)
   } finally {
     loading.value = false
+    refreshing.value = false
   }
-})
+}
+
+onMounted(() => load())
 </script>
 
 <template>
   <div class="container my-menus">
     <div class="header">
       <h1 class="page-title">我的菜单</h1>
-      <router-link :to="{ name: 'menu-create' }" class="btn primary">
-        + 添加菜品
-      </router-link>
+      <div class="actions">
+        <button
+          class="btn ghost refresh-btn"
+          :disabled="refreshing"
+          title="刷新，获取最新菜单"
+          @click="load(true)"
+        >
+          <span class="refresh-icon" :class="{ spinning: refreshing }">↻</span>
+          {{ refreshing ? '刷新中…' : '刷新' }}
+        </button>
+        <router-link :to="{ name: 'menu-create' }" class="btn primary">
+          + 添加菜品
+        </router-link>
+      </div>
     </div>
 
     <div v-if="loading" class="loading">加载中…</div>
@@ -58,6 +75,27 @@ onMounted(async () => {
   margin-bottom: 24px;
   gap: 16px;
   flex-wrap: wrap;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.refresh-icon {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+}
+.refresh-icon.spinning {
+  animation: refresh-spin 0.8s linear infinite;
+}
+@keyframes refresh-spin {
+  to { transform: rotate(360deg); }
 }
 .page-title {
   font-size: 26px;

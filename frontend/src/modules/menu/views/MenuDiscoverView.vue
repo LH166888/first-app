@@ -4,24 +4,41 @@ import { getChefs } from '../api/dish'
 
 const chefs = ref([])
 const loading = ref(true)
+const refreshing = ref(false)
 
-onMounted(async () => {
+// force=true 跳过缓存强拉最新（手动刷新按钮用）
+async function load(force = false) {
+  if (force) refreshing.value = true
   try {
-    const res = await getChefs()
+    const res = await getChefs({ force })
     chefs.value = res.chefs || []
   } catch (e) {
     console.error('加载发现页失败:', e)
   } finally {
     loading.value = false
+    refreshing.value = false
   }
-})
+}
+
+onMounted(() => load())
 </script>
 
 <template>
   <div class="container discover">
     <div class="header">
-      <h1 class="page-title">发现</h1>
-      <p class="subtitle">看看大家做了什么菜，选几道点给对方</p>
+      <div class="header-text">
+        <h1 class="page-title">发现</h1>
+        <p class="subtitle">看看大家做了什么菜，选几道点给对方</p>
+      </div>
+      <button
+        class="btn ghost refresh-btn"
+        :disabled="refreshing"
+        title="刷新，看看有没有新的菜单"
+        @click="load(true)"
+      >
+        <span class="refresh-icon" :class="{ spinning: refreshing }">↻</span>
+        {{ refreshing ? '刷新中…' : '刷新' }}
+      </button>
     </div>
 
     <div v-if="loading" class="loading">加载中…</div>
@@ -54,7 +71,31 @@ onMounted(async () => {
   padding: 28px 20px 60px;
 }
 .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
   margin-bottom: 24px;
+}
+.header-text {
+  min-width: 0;
+}
+.refresh-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.refresh-icon {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+}
+.refresh-icon.spinning {
+  animation: refresh-spin 0.8s linear infinite;
+}
+@keyframes refresh-spin {
+  to { transform: rotate(360deg); }
 }
 .page-title {
   font-size: 26px;

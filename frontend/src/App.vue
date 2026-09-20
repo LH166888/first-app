@@ -31,7 +31,7 @@ onUnmounted(() => {
     <div class="container bar-inner">
       <div class="brand-group">
         <router-link to="/" class="logo">
-          <span class="logo-mark">🌊</span>
+          <span class="logo-mark">✨</span>
           <span class="logo-text">AI 无限<i>AI Infinity</i></span>
         </router-link>
 
