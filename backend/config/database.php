@@ -63,6 +63,15 @@ return [
             'engine' => 'InnoDB',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // 持久连接：让同一 Apache worker 进程复用底层 TCP+SSL 连接，
+                // 避免每个请求都重新与 Aiven 做一次 SSL 握手（实测每请求约省 1.5s）。
+                // 用 env 控制：生产(Render)设 DB_PERSISTENT=true 开启；本地默认关（localhost 无握手开销，无需持久连接）。
+                // 副作用（连接被服务端超时关闭后仍被复用 → "MySQL server has gone away"）由 Laravel
+                // 框架内置兜底：Connection::handleQueryException 检测到掉线特征串
+                // （server has gone away / Lost connection / SSL connection has been closed / Broken pipe）
+                // 时会自动 reconnect() 并把该查询重跑一次，对业务透明、无需额外代码。
+                // 唯一不重试的是「显式事务内」的查询（半个事务不能安全重放）——本项目业务代码零显式事务，不受影响。
+                PDO::ATTR_PERSISTENT => env('DB_PERSISTENT', false),
             ]) : [],
         ],
 
