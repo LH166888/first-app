@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import CarThumb from './CarThumb.vue'
-import { store } from '../../../shared/store'
+import { store } from '../store'
 import { ENERGY_LABEL } from '../data/constants'
 
 const props = defineProps({

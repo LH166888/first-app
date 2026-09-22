@@ -6,7 +6,7 @@ import ChartCanvas from '../components/ChartCanvas.vue'
 import LoginToast from '../../../shared/components/LoginToast.vue'
 import { YEAR, ENERGY_LABEL } from '../data/constants'
 import { getCar, listCars } from '../api/cars'
-import { store } from '../../../shared/store'
+import { store } from '../store'
 
 const route = useRoute()
 const router = useRouter()

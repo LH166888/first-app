@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { store } from '../../../shared/store'
+import { store } from '../store'
 
 const router = useRouter()
 const selected = computed(() =>

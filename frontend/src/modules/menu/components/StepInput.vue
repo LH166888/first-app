@@ -31,7 +31,7 @@ function removeItem(index) {
         rows="2"
         @input="updateItem(index, $event.target.value)"
       ></textarea>
-      <button type="button" class="remove" @click="removeItem(index)" title="删除">
+      <button type="button" class="remove" title="删除" @click="removeItem(index)">
         ✕
       </button>
     </div>

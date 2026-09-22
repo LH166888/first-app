@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getUserDishes } from '../api/dish'
-import { useCart } from '../../../shared/cart'
+import { useCart } from '../cart'
 import DishCard from '../components/DishCard.vue'
 import CartBar from '../components/CartBar.vue'
 

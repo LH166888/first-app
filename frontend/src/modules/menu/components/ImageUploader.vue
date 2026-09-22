@@ -70,7 +70,7 @@ function clearImage() {
   <div class="image-uploader">
     <div v-if="previewUrl" class="preview">
       <img :src="previewUrl" alt="预览" />
-      <button type="button" class="clear" @click="clearImage" title="删除图片">
+      <button type="button" class="clear" title="删除图片" @click="clearImage">
         ✕
       </button>
     </div>

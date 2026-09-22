@@ -13,7 +13,7 @@ import {
   deriveBrands,
 } from '../data/constants'
 import { listCars } from '../api/cars'
-import { store } from '../../../shared/store'
+import { store } from '../store'
 
 const route = useRoute()
 
@@ -28,7 +28,7 @@ onMounted(async () => {
     cars.value = list
     store.cacheCars(list) // 填充按 id 缓存，供对比/收藏页复用
     store.cacheCarList(list) // 记录"已拥有全量列表"，供详情页复用名次计算
-  } catch (e) {
+  } catch {
     error.value = '车型数据加载失败，请稍后重试'
   } finally {
     loading.value = false
