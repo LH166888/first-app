@@ -25,7 +25,8 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            // 账号：字母数字，长度合规（3-18），与应用层账号规则一致
+            'account' => fake()->unique()->numerify('user########'),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

@@ -18,6 +18,8 @@ Route::get('/cars/{id}', [CarController::class, 'show']);
 // 注册 / 登录
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+// 获取注册邀请码（推送到管理员微信）
+Route::post('/invite-code', [AuthController::class, 'sendInviteCode']);
 
 // ---- 需登录接口（Sanctum token）----
 Route::middleware('auth:sanctum')->group(function () {
@@ -28,6 +30,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // 登出
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // 个人信息：修改昵称 / 修改密码
+    Route::patch('/user/name', [AuthController::class, 'updateName']);
+    Route::patch('/user/password', [AuthController::class, 'updatePassword']);
 
     // 收藏：列表 / 添加 / 取消
     Route::get('/favorites', [FavoriteController::class, 'index']);

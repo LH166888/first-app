@@ -100,17 +100,21 @@ export const store = reactive({
     this.token = token
     localStorage.setItem(TOKEN_KEY, token)
   },
-  async login({ email, password }) {
-    const { user, token } = await authApi.login({ email, password })
+  async login({ account, password }) {
+    const { user, token } = await authApi.login({ account, password })
     this._setAuth(user, token)
     await this.loadFavorites()
     return user
   },
-  async register({ name, email, password }) {
-    const { user, token } = await authApi.register({ name, email, password })
+  async register({ name, account, password, invite_code }) {
+    const { user, token } = await authApi.register({ name, account, password, invite_code })
     this._setAuth(user, token)
     await this.loadFavorites()
     return user
+  },
+  // 后端更新用户后同步本地 user（如改昵称），token 不变
+  setUser(user) {
+    this.user = user
   },
   async logout() {
     try {

@@ -2,7 +2,7 @@
 // 门户首页（Launchpad）：AI 无限平台入口。
 // 三层结构：① 海洋主题背景（当前用 CSS 渐变兜底，预留 <video> 结构）
 //           ② 暗化遮罩  ③ 内容层（标题 + 毛玻璃画册轮播 + 菜单推荐占位）
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -42,6 +42,7 @@ const recommends = [
 
 const active = ref(0)
 let timer = null
+let touchStart = null
 
 const reduceMotion =
   typeof window !== 'undefined' &&
@@ -56,6 +57,18 @@ function next() {
 }
 function prev() {
   go(active.value - 1)
+}
+
+function onTouchStart(e) {
+  touchStart = e.touches[0].clientX
+}
+function onTouchEnd(e) {
+  if (!touchStart) return
+  const diff = e.changedTouches[0].clientX - touchStart
+  if (Math.abs(diff) > 50) {
+    diff > 0 ? prev() : next()
+  }
+  touchStart = null
 }
 
 function start() {
@@ -112,7 +125,7 @@ onUnmounted(stop)
       <div class="carousel">
         <button class="arrow prev" aria-label="上一个" @click="prev">‹</button>
 
-        <div class="stage">
+        <div class="stage" @touchstart="onTouchStart" @touchend="onTouchEnd">
           <button
             v-for="(c, i) in cards"
             :key="c.key"
@@ -364,6 +377,8 @@ onUnmounted(stop)
   height: 9px;
   border-radius: 50%;
   border: none;
+  padding: 0;
+  appearance: none;
   background: rgba(255, 255, 255, 0.35);
   cursor: pointer;
   transition: all 0.2s;

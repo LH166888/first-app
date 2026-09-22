@@ -41,4 +41,13 @@ return [
         'secret_key' => env('BAIDU_OCR_SECRET_KEY'),
     ],
 
+    // 微信公众号模板消息（默认走官方测试号，免认证免费）：真实值走 env
+    'wechat_mp' => [
+        'app_id' => env('WECHAT_MP_APP_ID'),
+        'app_secret' => env('WECHAT_MP_APP_SECRET'),
+        // 默认模板与接收者，方便"给自己推一条"这类固定通知直接用
+        'template_id' => env('WECHAT_MP_TEMPLATE_ID'),
+        'default_openid' => env('WECHAT_MP_DEFAULT_OPENID'),
+    ],
+
 ];

@@ -111,10 +111,10 @@ class MenuDemoSeeder extends Seeder
         $this->command->info('菜单 demo 数据已就绪：张三/李四/王五（密码 password），5 道菜 + 3 条点单。');
     }
 
-    private function ensureUser(string $name, string $email): User
+    private function ensureUser(string $name, string $account): User
     {
         return User::firstOrCreate(
-            ['email' => $email],
+            ['account' => $account],
             ['name' => $name, 'password' => Hash::make('password')],
         );
     }

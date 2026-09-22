@@ -49,7 +49,9 @@ onUnmounted(() => {
 
       <nav class="actions">
         <template v-if="store.user">
-          <span class="user">👤 {{ store.user.name }}</span>
+          <router-link to="/profile" class="user" title="个人信息">
+            👤 {{ store.user.name }}
+          </router-link>
           <button class="btn ghost" @click="store.logout()">退出</button>
         </template>
         <button v-else class="btn" @click="openLogin">登录</button>
@@ -147,6 +149,11 @@ onUnmounted(() => {
 .user {
   font-size: 14px;
   color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.user:hover {
+  color: var(--text);
 }
 main {
   min-height: calc(100vh - 64px);

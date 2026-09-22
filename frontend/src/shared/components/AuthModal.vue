@@ -1,14 +1,66 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onUnmounted } from 'vue'
 import { store } from '../store'
+import { sendInviteCode } from '../api/auth'
 
 const emit = defineEmits(['close'])
 
 const mode = ref('login') // 'login' | 'register'
-const form = reactive({ name: '', email: '', password: '' })
-const errors = ref({}) // 后端按字段返回的校验错误 { email: ['...'], ... }
+const form = reactive({ name: '', account: '', password: '', invite_code: '' })
+const errors = ref({}) // 后端按字段返回的校验错误 { account: ['...'], ... }
 const generalError = ref('')
 const submitting = ref(false)
+
+// 账号格式：字母/数字/@/.，长度 3-18，无空格、无中文、无下划线等特殊字符
+const ACCOUNT_RE = /^[A-Za-z0-9@.]{3,18}$/
+const accountValid = computed(() => ACCOUNT_RE.test(form.account.trim()))
+
+// ---- 邀请码倒计时（注册用）----
+const countdown = ref(0)
+const sendingCode = ref(false)
+let timer = null
+
+function startCountdown(sec = 60) {
+  countdown.value = sec
+  timer = setInterval(() => {
+    countdown.value -= 1
+    if (countdown.value <= 0) {
+      clearInterval(timer)
+      timer = null
+    }
+  }, 1000)
+}
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
+
+async function requestCode() {
+  if (sendingCode.value || countdown.value > 0) return
+  // 先做本地账号格式校验，避免无效账号也触发发码冷却
+  if (!accountValid.value) {
+    errors.value = { account: ['账号需 3-18 位，仅限字母、数字、@、.'] }
+    return
+  }
+  sendingCode.value = true
+  errors.value = {}
+  generalError.value = ''
+  try {
+    await sendInviteCode({ account: form.account.trim() })
+    startCountdown(60)
+  } catch (e) {
+    const res = e?.response
+    if (res?.status === 422 && res.data?.errors) {
+      errors.value = res.data.errors
+    } else if (res?.data?.message) {
+      generalError.value = res.data.message
+    } else {
+      generalError.value = '发送失败，请稍后重试'
+    }
+  } finally {
+    sendingCode.value = false
+  }
+}
 
 function switchMode(m) {
   if (mode.value === m) return
@@ -24,17 +76,23 @@ function fieldError(name) {
 
 async function submit() {
   if (submitting.value) return
+  // 注册前本地校验账号格式
+  if (mode.value === 'register' && !accountValid.value) {
+    errors.value = { account: ['账号需 3-18 位，仅限字母、数字、@、.'] }
+    return
+  }
   submitting.value = true
   errors.value = {}
   generalError.value = ''
   try {
     if (mode.value === 'login') {
-      await store.login({ email: form.email.trim(), password: form.password })
+      await store.login({ account: form.account.trim(), password: form.password })
     } else {
       await store.register({
         name: form.name.trim(),
-        email: form.email.trim(),
+        account: form.account.trim(),
         password: form.password,
+        invite_code: form.invite_code.trim(),
       })
     }
     emit('close')
@@ -69,14 +127,14 @@ async function submit() {
         </label>
 
         <label class="field">
-          <span class="lbl">邮箱</span>
+          <span class="lbl">账号</span>
           <input
-            v-model="form.email"
-            type="email"
-            placeholder="you@example.com"
-            autocomplete="email"
+            v-model="form.account"
+            type="text"
+            placeholder="3-18 位，字母、数字、@、."
+            autocomplete="username"
           />
-          <span v-if="fieldError('email')" class="err">{{ fieldError('email') }}</span>
+          <span v-if="fieldError('account')" class="err">{{ fieldError('account') }}</span>
         </label>
 
         <label class="field">
@@ -84,10 +142,34 @@ async function submit() {
           <input
             v-model="form.password"
             type="password"
-            placeholder="至少 8 位"
+            placeholder="至少 6 位"
             :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
           />
           <span v-if="fieldError('password')" class="err">{{ fieldError('password') }}</span>
+        </label>
+
+        <label v-if="mode === 'register'" class="field">
+          <span class="lbl">邀请码</span>
+          <div class="code-row">
+            <input
+              v-model="form.invite_code"
+              type="text"
+              inputmode="numeric"
+              maxlength="6"
+              placeholder="6 位邀请码"
+              autocomplete="off"
+            />
+            <button
+              type="button"
+              class="btn code-btn"
+              :disabled="sendingCode || countdown > 0 || !accountValid"
+              @click="requestCode"
+            >
+              {{ countdown > 0 ? `${countdown}s` : sendingCode ? '发送中…' : '获取邀请码' }}
+            </button>
+          </div>
+          <span v-if="fieldError('invite_code')" class="err">{{ fieldError('invite_code') }}</span>
+          <span class="hint">点击获取后，邀请码将推送到管理员微信，请向管理员索取（60 秒有效）</span>
         </label>
 
         <p v-if="generalError" class="general-err">{{ generalError }}</p>
@@ -161,6 +243,40 @@ async function submit() {
 }
 .field input:focus {
   border-color: var(--accent);
+}
+/* 覆盖浏览器自动填充的白底：用 inset 阴影撑深色背景，固定文字色 */
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  box-shadow: 0 0 0 1000px var(--panel-2) inset;
+  caret-color: var(--text);
+  transition: background-color 5000s ease-in-out 0s;
+}
+.code-row {
+  display: flex;
+  gap: 8px;
+}
+.code-row input {
+  flex: 1;
+  min-width: 0;
+}
+.code-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 0 14px;
+  font-size: 13px;
+}
+.code-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.hint {
+  display: block;
+  color: var(--text-mute);
+  font-size: 12px;
+  margin-top: 5px;
+  line-height: 1.4;
 }
 .err {
   display: block;
