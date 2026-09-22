@@ -3,7 +3,7 @@
 // 下沉到车榜自己的子头，让平台外壳保持中性。
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { favoriteCount, compareCount } from '../../shared/store'
+import { favoriteCount, compareCount } from './store'
 
 const router = useRouter()
 const keyword = ref('')

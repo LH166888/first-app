@@ -1,4 +1,4 @@
-import client from './client'
+import client from '../../../shared/api/client'
 
 // 我的收藏（需登录）。后端返回 { data: [车型完整信息], ids: [car_id] }
 export async function listFavorites() {

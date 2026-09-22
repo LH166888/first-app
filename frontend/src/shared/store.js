@@ -1,6 +1,5 @@
-import { reactive, computed, watch } from 'vue'
+import { reactive, watch } from 'vue'
 import * as authApi from './api/auth'
-import * as favApi from './api/favorites'
 import { TOKEN_KEY } from './api/client'
 import { clearAllCache } from './api/cache'
 
@@ -15,101 +14,30 @@ function load(key, fallback) {
   }
 }
 
+// 全局用户态：仅保留跨模块共享的登录信息（user / token）与认证动作。
+// 各业务模块的局部状态（如车榜收藏/对比）已下沉到各自模块的 store。
 export const store = reactive({
   // 已登录用户（来自后端；用已存 token 恢复会话前先用本地缓存显示）
   user: load(USER_KEY, null),
   // Sanctum token
   token: localStorage.getItem(TOKEN_KEY) || null,
-  // 收藏的车型 id 列表（登录后从后端拉取；未登录为空）
-  favorites: [],
-  // 对比栏中选中的车型 id 列表（纯前端本地状态，不入库）
-  compareIds: [],
-  // 按 id 缓存的车型对象，供对比栏/收藏页等按 id 取车（首次拉列表后填充）
-  carsById: {},
-  // 全量车型列表缓存（仅在拉到完整榜单时填充，用于详情页复用名次计算，避免重复请求）
-  carList: [],
-
-  // ---- 车型缓存 ----
-  cacheCars(list) {
-    for (const c of list) this.carsById[c.id] = c
-  },
-  // 缓存完整榜单列表（区别于 cacheCars：这表示"已拥有全量数据"）
-  cacheCarList(list) {
-    this.carList = list
-  },
-  getCachedCar(id) {
-    return this.carsById[id] || null
-  },
-
-  // ---- 收藏 ----
-  isFavorite(id) {
-    return this.favorites.includes(id)
-  },
-  async toggleFavorite(id) {
-    if (!this.user) return { needLogin: true }
-    const i = this.favorites.indexOf(id)
-    const wasFav = i >= 0
-    // 乐观更新
-    if (wasFav) this.favorites.splice(i, 1)
-    else this.favorites.push(id)
-    try {
-      if (wasFav) await favApi.removeFavorite(id)
-      else await favApi.addFavorite(id)
-    } catch (e) {
-      // 失败回滚
-      if (wasFav) this.favorites.push(id)
-      else {
-        const j = this.favorites.indexOf(id)
-        if (j >= 0) this.favorites.splice(j, 1)
-      }
-      return { needLogin: false, error: e }
-    }
-    return { needLogin: false }
-  },
-  async loadFavorites() {
-    if (!this.user) return
-    try {
-      const { data, ids } = await favApi.listFavorites()
-      this.favorites = ids || (data || []).map((c) => c.id)
-      if (data) this.cacheCars(data)
-    } catch {
-      this.favorites = []
-    }
-  },
-
-  // ---- 对比（纯前端本地）----
-  inCompare(id) {
-    return this.compareIds.includes(id)
-  },
-  toggleCompare(id) {
-    const i = this.compareIds.indexOf(id)
-    if (i >= 0) this.compareIds.splice(i, 1)
-    else {
-      if (this.compareIds.length >= 4) return { full: true }
-      this.compareIds.push(id)
-    }
-    return { full: false }
-  },
-  clearCompare() {
-    this.compareIds = []
-  },
 
   // ---- 认证 ----
   _setAuth(user, token) {
     this.user = user
     this.token = token
     localStorage.setItem(TOKEN_KEY, token)
+    // 通知各模块登录完成（如车榜模块据此拉取收藏），避免 shared 反向依赖业务模块
+    window.dispatchEvent(new CustomEvent('auth:login'))
   },
   async login({ account, password }) {
     const { user, token } = await authApi.login({ account, password })
     this._setAuth(user, token)
-    await this.loadFavorites()
     return user
   },
   async register({ name, account, password, invite_code }) {
     const { user, token } = await authApi.register({ name, account, password, invite_code })
     this._setAuth(user, token)
-    await this.loadFavorites()
     return user
   },
   // 后端更新用户后同步本地 user（如改昵称），token 不变
@@ -127,15 +55,13 @@ export const store = reactive({
   _clearAuth() {
     this.user = null
     this.token = null
-    this.favorites = []
     localStorage.removeItem(TOKEN_KEY)
     // 清空接口内存缓存，避免换账号后看到上一个账号的菜单/发现页数据
     clearAllCache()
+    // 通知各模块清理登录态相关的局部数据（如车榜收藏）
+    window.dispatchEvent(new CustomEvent('auth:logout'))
   },
 })
-
-export const favoriteCount = computed(() => store.favorites.length)
-export const compareCount = computed(() => store.compareIds.length)
 
 // 持久化 user（token 已在 _setAuth/_clearAuth 中单独写 localStorage）
 watch(
@@ -151,8 +77,3 @@ watch(
 window.addEventListener('auth:unauthorized', () => {
   store._clearAuth()
 })
-
-// 启动时若已有 token，拉取收藏以恢复登录态下的收藏列表
-if (store.token && store.user) {
-  store.loadFavorites()
-}

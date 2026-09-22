@@ -69,6 +69,9 @@ onMounted(loadReceived)
 
     <!-- 我收到的：XXX点的 备注 时间 -->
     <template v-else-if="tab === 'received'">
+      <p v-if="received.length" class="scene-tip">
+        这些是朋友们想尝试的菜品，线下约个时间一起做吧！
+      </p>
       <div v-if="!received.length" class="empty">
         <div class="empty-icon">🔖</div>
         <p>还没有人点你的菜</p>
@@ -149,6 +152,18 @@ onMounted(loadReceived)
 .tab.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
+}
+
+/* 场景引导：说明「收到的点单」= 朋友的想吃信号，引导线下约饭 */
+.scene-tip {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .loading,

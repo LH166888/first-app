@@ -3,13 +3,14 @@ import { computed, ref, onMounted } from 'vue'
 import CarRow from '../components/CarRow.vue'
 import CompareBar from '../components/CompareBar.vue'
 import LoginToast from '../../../shared/components/LoginToast.vue'
-import { store } from '../../../shared/store'
+import { store } from '../store'
+import { store as userStore } from '../../../shared/store'
 
 const toastRef = ref(null)
 
 // 进入收藏页时从后端刷新一次（同时会把收藏车型写入缓存）
 onMounted(() => {
-  if (store.user) store.loadFavorites()
+  if (userStore.user) store.loadFavorites()
 })
 
 const list = computed(() =>
@@ -27,7 +28,7 @@ const maxSales = computed(() =>
   <div class="container page">
     <h1>我的收藏</h1>
 
-    <div v-if="!store.user" class="card empty">
+    <div v-if="!userStore.user" class="card empty">
       登录后即可收藏心仪车型。点击右上角「登录」开始吧～
     </div>
     <div v-else-if="!list.length" class="card empty">

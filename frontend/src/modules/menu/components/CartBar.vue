@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useCart } from '../../../shared/cart'
+import { useCart } from '../cart'
 import { placeOrder } from '../api/order'
 
 const router = useRouter()
@@ -26,7 +26,8 @@ async function submit() {
       note: note.value.trim(),
     }
     await placeOrder(payload)
-    alert(`成功向 ${cart.targetUserName} 点单！`)
+    // 点单是"想吃"的兴趣表达，不是电商下单——提示走向线下约饭
+    alert(`点单成功！${cart.targetUserName} 会在「我收到的」看到你的心愿单。记得线下约个时间一起品尝~`)
     clear()
     note.value = ''
     expanded.value = false
