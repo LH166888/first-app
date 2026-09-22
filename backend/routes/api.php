@@ -1,12 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CarController;
-use App\Http\Controllers\Api\DishController;
-use App\Http\Controllers\Api\FavoriteController;
-use App\Http\Controllers\Api\IdCardController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\Car\CarController;
+use App\Http\Controllers\Api\Car\FavoriteController;
+use App\Http\Controllers\Api\Menu\DishController;
+use App\Http\Controllers\Api\Menu\OrderController;
+use App\Http\Controllers\Api\Menu\UploadController;
+use App\Http\Controllers\Api\Tools\IdCardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
