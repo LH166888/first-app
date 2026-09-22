@@ -224,6 +224,15 @@ async function savePassword() {
 .field input:focus {
   border-color: var(--accent);
 }
+/* 覆盖浏览器自动填充的白底：用 inset 阴影撑深色背景，固定文字色 */
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  box-shadow: 0 0 0 1000px var(--panel-2) inset;
+  caret-color: var(--text);
+  transition: background-color 5000s ease-in-out 0s;
+}
 .err {
   display: block;
   color: var(--danger);
