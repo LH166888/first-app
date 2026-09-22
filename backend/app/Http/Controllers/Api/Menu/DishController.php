@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Menu;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Menu\StoreDishRequest;
 use App\Models\Dish;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,9 +16,18 @@ class DishController extends Controller
      */
     public function index(Request $request)
     {
-        $dishes = $request->user()->dishes()->latest()->get();
+        [$page, $perPage] = $this->getPaginationParams($request);
+        $paginator = $request->user()->dishes()->latest()->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json(['dishes' => $dishes]);
+        return response()->json([
+            'data' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+                'last_page'    => $paginator->lastPage(),
+            ],
+        ]);
     }
 
     /**
@@ -42,9 +52,9 @@ class DishController extends Controller
      * 创建菜品。body: { name, image_key?, ingredients:[{name,amount}], steps:[{description}] }
      * step_number 由后端按顺序生成，保证与前端展示一致。
      */
-    public function store(Request $request)
+    public function store(StoreDishRequest $request)
     {
-        $data = $this->validateDish($request);
+        $data = $request->validated();
 
         $dish = $request->user()->dishes()->create([
             'name' => $data['name'],
@@ -59,7 +69,7 @@ class DishController extends Controller
     /**
      * 更新菜品（仅属主）。
      */
-    public function update(Request $request, string $id)
+    public function update(StoreDishRequest $request, string $id)
     {
         $dish = Dish::find($id);
 
@@ -70,7 +80,7 @@ class DishController extends Controller
             return response()->json(['message' => '无权编辑此菜品'], 403);
         }
 
-        $data = $this->validateDish($request);
+        $data = $request->validated();
 
         $dish->update([
             'name' => $data['name'],
@@ -149,19 +159,6 @@ class DishController extends Controller
     }
 
     // ---- 私有工具 ----
-
-    private function validateDish(Request $request): array
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'image_key' => ['nullable', 'string', 'max:255'],
-            'ingredients' => ['required', 'array', 'min:1'],
-            'ingredients.*.name' => ['required', 'string', 'max:50'],
-            'ingredients.*.amount' => ['nullable', 'string', 'max:50'],
-            'steps' => ['required', 'array', 'min:1'],
-            'steps.*.description' => ['required', 'string', 'max:500'],
-        ]);
-    }
 
     private function normalizeIngredients(array $ingredients): array
     {

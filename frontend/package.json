@@ -1,13 +1,17 @@
 {
-  "name": "che-bang",
+  "name": "ai-infinity",
   "version": "0.1.0",
-  "description": "汽车年度销量排行榜与车型配置查询（Demo）",
+  "description": "AI 无限 — 个人应用平台（车榜 / 菜单 / 工具箱）",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
@@ -17,7 +21,13 @@
     "vue-router": "^4.4.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@vitejs/plugin-vue": "^5.0.5",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-vue": "^9.33.0",
+    "globals": "^15.15.0",
+    "prettier": "^3.9.8",
     "vite": "^5.3.3"
   }
 }

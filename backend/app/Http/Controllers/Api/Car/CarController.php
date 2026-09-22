@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Car;
 
 use App\Http\Controllers\Controller;
 use App\Models\Car;
@@ -33,11 +33,17 @@ class CarController extends Controller
             });
         }
 
-        $cars = $query->orderByDesc('sales')->get();
+        [$page, $perPage] = $this->getPaginationParams($request);
+        $paginator = $query->orderByDesc('sales')->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'data' => $cars,
-            'total' => $cars->count(),
+            'data' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+                'last_page'    => $paginator->lastPage(),
+            ],
         ]);
     }
 

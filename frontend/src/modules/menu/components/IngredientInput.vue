@@ -40,7 +40,7 @@ function removeItem(index) {
         placeholder="用量，如 3个"
         @input="updateItem(index, 'amount', $event.target.value)"
       />
-      <button type="button" class="remove" @click="removeItem(index)" title="删除">
+      <button type="button" class="remove" title="删除" @click="removeItem(index)">
         ✕
       </button>
     </div>

@@ -67,7 +67,7 @@ function handleEdit() {
 
       <div v-if="dish.is_owner" class="actions-bar">
         <button class="btn secondary" @click="handleEdit">编辑</button>
-        <button class="btn danger" @click="handleDelete" :disabled="deleting">
+        <button class="btn danger" :disabled="deleting" @click="handleDelete">
           {{ deleting ? '删除中…' : '删除' }}
         </button>
       </div>

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Car;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Car\StoreFavoriteRequest;
 use App\Models\Car;
 use Illuminate\Http\Request;
 
@@ -16,11 +17,19 @@ class FavoriteController extends Controller
     {
         $carIds = $request->user()->favorites()->pluck('car_id');
 
-        $cars = Car::whereIn('id', $carIds)->orderByDesc('sales')->get();
+        [$page, $perPage] = $this->getPaginationParams($request);
+        $paginator = Car::whereIn('id', $carIds)
+            ->orderByDesc('sales')
+            ->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'data' => $cars,
-            'ids' => $carIds,
+            'data' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+                'last_page'    => $paginator->lastPage(),
+            ],
         ]);
     }
 
@@ -28,11 +37,9 @@ class FavoriteController extends Controller
      * 添加收藏。body: { car_id }
      * 依赖 (user_id, car_id) 联合唯一索引 + firstOrCreate 防重复。
      */
-    public function store(Request $request)
+    public function store(StoreFavoriteRequest $request)
     {
-        $data = $request->validate([
-            'car_id' => ['required', 'string', 'exists:cars,id'],
-        ]);
+        $data = $request->validated();
 
         $request->user()->favorites()->firstOrCreate([
             'car_id' => $data['car_id'],

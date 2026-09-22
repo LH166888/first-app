@@ -1,12 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CarController;
-use App\Http\Controllers\Api\DishController;
-use App\Http\Controllers\Api\FavoriteController;
-use App\Http\Controllers\Api\IdCardController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\Car\CarController;
+use App\Http\Controllers\Api\Car\FavoriteController;
+use App\Http\Controllers\Api\Menu\DishController;
+use App\Http\Controllers\Api\Menu\OrderController;
+use App\Http\Controllers\Api\Menu\UploadController;
+use App\Http\Controllers\Api\Tools\IdCardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/cars', [CarController::class, 'index']);
 Route::get('/cars/{id}', [CarController::class, 'show']);
 
-// 注册 / 登录
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// 注册 / 登录（挂 throttle 限流，防暴力破解与刷码）
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 // 获取注册邀请码（推送到管理员微信）
-Route::post('/invite-code', [AuthController::class, 'sendInviteCode']);
+Route::post('/invite-code', [AuthController::class, 'sendInviteCode'])->middleware('throttle:5,1');
 
 // ---- 需登录接口（Sanctum token）----
 Route::middleware('auth:sanctum')->group(function () {

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import CarThumb from '../components/CarThumb.vue'
 import { ENERGY_LABEL } from '../data/constants'
-import { store } from '../../../shared/store'
+import { store } from '../store'
 
 const router = useRouter()
 

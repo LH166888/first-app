@@ -7,8 +7,25 @@ const client = axios.create({
   timeout: 15000,
 })
 
-// token 与前端登录态共用一个 localStorage key，store.js 也读写它
-export const TOKEN_KEY = 'chebang_token'
+// token 与前端登录态共用一个 localStorage key，store.js 也读写它。
+// 品牌从「车榜」升级为「AI 无限」平台，key 随之改名；旧 key 在启动时自动迁移。
+const OLD_TOKEN_KEY = 'chebang_token'
+const NEW_TOKEN_KEY = 'ai_infinity_token'
+export const TOKEN_KEY = NEW_TOKEN_KEY
+
+// 应用启动时执行一次：把旧 key 的 token 平滑迁移到新 key，用户无感知、不掉线。
+// 放在此处（import 之后、拦截器注册之前）能保证 store 初始化和请求拦截器都读到新 key。
+function migrateToken() {
+  const newToken = localStorage.getItem(NEW_TOKEN_KEY)
+  if (!newToken) {
+    const oldToken = localStorage.getItem(OLD_TOKEN_KEY)
+    if (oldToken) {
+      localStorage.setItem(NEW_TOKEN_KEY, oldToken)
+      localStorage.removeItem(OLD_TOKEN_KEY)
+    }
+  }
+}
+migrateToken()
 
 // 请求拦截器：自动带上 Sanctum token
 client.interceptors.request.use((config) => {
