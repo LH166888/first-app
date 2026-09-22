@@ -128,6 +128,9 @@ class AuthController extends Controller
             ]);
         }
 
+        // 吊销该用户历史 'web' token，避免 personal_access_tokens 无限增长
+        $user->tokens()->where('name', 'web')->delete();
+
         $token = $user->createToken('web')->plainTextToken;
 
         return response()->json([
