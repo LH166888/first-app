@@ -7,6 +7,7 @@
 //   写操作（create/update/delete）执行后主动清相关缓存，保证自己的改动立即可见。
 //   详情页 getDishDetail 不缓存（进详情通常就是想看最新）。
 import client from '../../../shared/api/client'
+import { fetchAllPages } from '../../../shared/api/pagination'
 import { getCache, setCache, clearCache } from '../../../shared/api/cache'
 
 const TTL = 30 * 1000 // 30 秒
@@ -28,11 +29,11 @@ async function withCache(key, fetcher, force = false) {
   return data
 }
 
-// 我的菜品列表 -> { dishes }
+// 我的菜品列表 -> { dishes }（后端改为分页信封 { data, meta }，翻页取全量后沿用原结构）
 export async function getMyDishes({ force = false } = {}) {
   return withCache(KEY_MY_DISHES, async () => {
-    const res = await client.get('/dishes')
-    return res.data
+    const { items } = await fetchAllPages('/dishes')
+    return { dishes: items }
   }, force)
 }
 

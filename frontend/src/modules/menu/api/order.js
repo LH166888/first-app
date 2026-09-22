@@ -2,6 +2,7 @@
 // 一次点单 = 给某个用户点了多个菜品 + 备注（购物车提交）。
 // 降级参考：import * as mock from './mockData'
 import client from '../../../shared/api/client'
+import { fetchAllPages } from '../../../shared/api/pagination'
 
 // 提交点单：{ to_user_id, dish_ids: [], note } -> { order }
 export async function placeOrder(payload) {
@@ -15,14 +16,14 @@ export async function getOrderDetail(id) {
   return res.data
 }
 
-// 我收到的点单 -> { orders }
+// 我收到的点单 -> { orders }（后端改为分页信封 { data, meta }，翻页取全量后沿用原结构）
 export async function getReceivedOrders() {
-  const res = await client.get('/orders/received')
-  return res.data
+  const { items } = await fetchAllPages('/orders/received')
+  return { orders: items }
 }
 
-// 我下的点单 -> { orders }
+// 我下的点单 -> { orders }（后端改为分页信封 { data, meta }，翻页取全量后沿用原结构）
 export async function getPlacedOrders() {
-  const res = await client.get('/orders/placed')
-  return res.data
+  const { items } = await fetchAllPages('/orders/placed')
+  return { orders: items }
 }
