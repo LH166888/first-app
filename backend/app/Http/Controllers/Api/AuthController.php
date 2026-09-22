@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use App\Services\WechatTemplateService;
 use Illuminate\Http\Request;
@@ -74,14 +76,9 @@ class AuthController extends Controller
     /**
      * 注册：校验邀请码后创建用户并返回 Sanctum token。
      */
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'account' => [...self::ACCOUNT_RULE, 'unique:users,account'],
-            'password' => ['required', 'string', 'min:6'],
-            'invite_code' => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
         $account = $data['account'];
         $cached = Cache::get(self::CODE_CACHE_PREFIX.$account);
@@ -113,12 +110,9 @@ class AuthController extends Controller
     /**
      * 登录：校验账号密码，返回 Sanctum token。
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $data = $request->validate([
-            'account' => ['required', 'string'],
-            'password' => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
         $user = User::where('account', $data['account'])->first();
 
