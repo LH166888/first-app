@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Menu;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Menu\StoreOrderRequest;
 use App\Models\Dish;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -16,16 +17,11 @@ class OrderController extends Controller
      * items 存下单时的菜品名称快照。
      * 返回 { order }。
      */
-    public function store(Request $request)
+    public function store(StoreOrderRequest $request)
     {
-        $data = $request->validate([
-            'to_user_id' => ['required', 'integer', 'exists:users,id'],
-            'dish_ids' => ['required', 'array', 'min:1'],
-            'dish_ids.*' => ['integer'],
-            'note' => ['nullable', 'string', 'max:100'],
-        ]);
+        $data = $request->validated();
 
-        $me = $request->user()->id;
+        $me     = $request->user()->id;
         $target = (int) $data['to_user_id'];
 
         if ($target === $me) {
@@ -90,19 +86,30 @@ class OrderController extends Controller
      */
     public function received(Request $request)
     {
-        $orders = Order::with('fromUser')
+        [$page, $perPage] = $this->getPaginationParams($request);
+
+        $paginator = Order::with('fromUser')
             ->where('to_user_id', $request->user()->id)
             ->latest()
-            ->get()
-            ->map(fn (Order $o) => [
-                'id' => $o->id,
-                'from_user' => ['id' => $o->fromUser->id, 'name' => $o->fromUser->name],
-                'note' => $o->note,
-                'created_at' => $o->created_at,
-                'item_count' => count($o->items),
-            ]);
+            ->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json(['orders' => $orders]);
+        $items = collect($paginator->items())->map(fn (Order $o) => [
+            'id'         => $o->id,
+            'from_user'  => ['id' => $o->fromUser->id, 'name' => $o->fromUser->name],
+            'note'       => $o->note,
+            'created_at' => $o->created_at,
+            'item_count' => count($o->items),
+        ]);
+
+        return response()->json([
+            'data' => $items,
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+                'last_page'    => $paginator->lastPage(),
+            ],
+        ]);
     }
 
     /**
@@ -111,18 +118,29 @@ class OrderController extends Controller
      */
     public function placed(Request $request)
     {
-        $orders = Order::with('toUser')
+        [$page, $perPage] = $this->getPaginationParams($request);
+
+        $paginator = Order::with('toUser')
             ->where('from_user_id', $request->user()->id)
             ->latest()
-            ->get()
-            ->map(fn (Order $o) => [
-                'id' => $o->id,
-                'to_user' => ['id' => $o->toUser->id, 'name' => $o->toUser->name],
-                'note' => $o->note,
-                'created_at' => $o->created_at,
-                'item_count' => count($o->items),
-            ]);
+            ->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json(['orders' => $orders]);
+        $items = collect($paginator->items())->map(fn (Order $o) => [
+            'id'         => $o->id,
+            'to_user'    => ['id' => $o->toUser->id, 'name' => $o->toUser->name],
+            'note'       => $o->note,
+            'created_at' => $o->created_at,
+            'item_count' => count($o->items),
+        ]);
+
+        return response()->json([
+            'data' => $items,
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+                'last_page'    => $paginator->lastPage(),
+            ],
+        ]);
     }
 }
