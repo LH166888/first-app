@@ -24,6 +24,13 @@ const cards = [
     desc: '身份证识别等实用小工具',
     to: '/tools',
   },
+  {
+    key: 'fishing',
+    icon: '🐟',
+    name: '复古捕鱼机',
+    desc: '怀旧街机捕鱼 · 金币夺宝 · 排行榜',
+    to: '/games/fishing',
+  },
 ]
 </script>
 
@@ -87,12 +94,12 @@ const cards = [
   letter-spacing: 1px;
 }
 
-/* 三卡片栅格：桌面三列等宽，窄屏自动换行 */
+/* 四卡片栅格：桌面四列等宽，窄屏自动换行 */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  max-width: 860px;
+  max-width: 1120px;
   margin: 0 auto;
 }
 .app-card {
