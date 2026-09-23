@@ -1,4 +1,4 @@
-import { client } from '@shared/api/client'
+import client from '../../../shared/api/client'
 
 export async function submitScore(scoreData) {
   const { data } = await client.post('/games/fishing/scores', {
