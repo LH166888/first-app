@@ -5,9 +5,10 @@ import carRoutes from './modules/car/routes'
 import toolsRoutes from './modules/tools/routes'
 import menuRoutes from './modules/menu/routes'
 import profileRoutes from './modules/profile/routes'
+import fishingRoutes from './modules/fishing/routes'
 
 // 平台外壳只负责汇总各业务模块的路由，模块内部路径与命名由各自 routes.js 决定。
-const routes = [...homeRoutes, ...carRoutes, ...toolsRoutes, ...menuRoutes, ...profileRoutes]
+const routes = [...homeRoutes, ...carRoutes, ...toolsRoutes, ...menuRoutes, ...profileRoutes, ...fishingRoutes]
 
 const router = createRouter({
   history: createWebHashHistory(),
