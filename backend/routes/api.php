@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Car\CarController;
 use App\Http\Controllers\Api\Car\FavoriteController;
+use App\Http\Controllers\Api\Games\FishingController;
 use App\Http\Controllers\Api\Menu\DishController;
 use App\Http\Controllers\Api\Menu\OrderController;
 use App\Http\Controllers\Api\Menu\UploadController;
@@ -61,4 +62,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ---- 菜单模块：图片上传（R2 预签名直传）----
     Route::post('/menu/upload-url', [UploadController::class, 'presign']);
+
+    // ---- Fishing 捕鱼游戏：成绩 / 排行榜 / 个人数据 ----
+    // 提交成绩挂 throttle 限流（按登录用户计数），防止刷分；次数/窗口读 config/games.php。
+    Route::post('/games/fishing/scores', [FishingController::class, 'store'])
+        ->middleware('throttle:'.config('games.fishing.throttle_limit').','.config('games.fishing.throttle_period'));
+    Route::get('/games/fishing/leaderboard', [FishingController::class, 'leaderboard']);
+    Route::get('/games/fishing/me', [FishingController::class, 'myStats']);
 });
