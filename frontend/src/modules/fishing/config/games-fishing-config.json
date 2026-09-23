@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Retro Fishing Arcade Game Configuration - A方案（正统街机机台模式）",
+    "lastUpdated": "2026-09-23",
+    "rtp_target": "92%-96%",
+    "note": "RTP需通过蒙特卡洛脚本验证后上线"
+  },
+  "game_modes": {
+    "standard": {
+      "name": "标准模式",
+      "max_game_duration_seconds": null,
+      "initial_coins": 3000,
+      "daily_free_coins": 3000,
+      "description": "无限时游戏，金币打光即结束"
+    }
+  },
+  "fish_species": [
+    {
+      "id": 1,
+      "name": "小黄鱼",
+      "name_en": "Small Fish",
+      "payout_multiplier": 2,
+      "health": 1,
+      "base_catch_rate_1x": 0.50,
+      "spawn_weight": 0.40,
+      "description": "遍地都是，走量"
+    },
+    {
+      "id": 2,
+      "name": "热带鱼",
+      "name_en": "Tropical Fish",
+      "payout_multiplier": 4,
+      "health": 2,
+      "base_catch_rate_1x": 0.35,
+      "spawn_weight": 0.22,
+      "description": "主力中坚"
+    },
+    {
+      "id": 3,
+      "name": "河豚",
+      "name_en": "Pufferfish",
+      "payout_multiplier": 6,
+      "health": 3,
+      "base_catch_rate_1x": 0.28,
+      "spawn_weight": 0.14,
+      "special_effect": "splash_radius",
+      "description": "捕获自带小范围溅射"
+    },
+    {
+      "id": 4,
+      "name": "乌龟",
+      "name_en": "Turtle",
+      "payout_multiplier": 10,
+      "health": 5,
+      "base_catch_rate_1x": 0.18,
+      "spawn_weight": 0.10,
+      "description": "血厚，性价比看炮倍"
+    },
+    {
+      "id": 5,
+      "name": "鲨鱼",
+      "name_en": "Shark",
+      "payout_multiplier": 25,
+      "health": 12,
+      "base_catch_rate_1x": 0.10,
+      "spawn_weight": 0.06,
+      "description": "高价值，追踪难"
+    },
+    {
+      "id": 6,
+      "name": "金龙",
+      "name_en": "Golden Dragon",
+      "payout_multiplier": 60,
+      "health": 25,
+      "base_catch_rate_1x": 0.05,
+      "spawn_weight": 0.035,
+      "description": "稀有大鱼，全场焦点"
+    },
+    {
+      "id": 7,
+      "name": "元宝鱼",
+      "name_en": "Lucky Fish",
+      "payout_multiplier": 60,
+      "health": 8,
+      "base_catch_rate_1x": 0.12,
+      "spawn_weight": 0.03,
+      "special_effect": "coin_rain",
+      "description": "捕获吐金币雨，怀旧标志物"
+    },
+    {
+      "id": 8,
+      "name": "灯笼鱼",
+      "name_en": "Lanternfish",
+      "payout_multiplier": 20,
+      "health": 6,
+      "base_catch_rate_1x": 0.12,
+      "spawn_weight": 0.015,
+      "special_effect": "chain_explosion",
+      "description": "捕获后引爆周围小鱼，爽点"
+    }
+  ],
+  "cannon_mechanics": {
+    "multipliers": [1, 2, 5, 10],
+    "cannon_cost_per_shot": 1,
+    "catch_rate_amplification": {
+      "description": "不同炮倍下的捕获率放大系数",
+      "1x": 1.0,
+      "2x": 1.15,
+      "5x": 1.25,
+      "10x": 1.35
+    },
+    "note": "捕获率随炮倍提升而放大，保证高炮倍有动力使用"
+  },
+  "rtp_parameters": {
+    "description": "RTP（返奖率）= 长期吐出金币 / 投入金币",
+    "target_rtp_range": "92%-96%",
+    "rationale": "高于街机真机(88-92%)以适应纯娱乐场景，低于98%以防金币贬值",
+    "single_session_volatility": "medium",
+    "validation_method": "蒙特卡洛模拟10万发子弹",
+    "adjustment_levers": [
+      "鱼种出现权重",
+      "鱼种捕获率",
+      "鱼种吐分倍数"
+    ]
+  },
+  "daily_economics": {
+    "free_coins_per_day": 3000,
+    "avg_coins_per_minute": 100,
+    "avg_game_session_minutes": 25,
+    "avg_game_session_coins": 2500,
+    "rationale": "保证非付费用户能玩30+分钟，维持对排行榜的驱动"
+  },
+  "leaderboard": {
+    "ranking_metric": "cumulative_net_coins",
+    "description": "按累计净胜金币排名（非单局最高分）",
+    "reset_frequency": "weekly",
+    "top_n_display": 10
+  },
+  "anti_cheat": {
+    "max_single_session_coins": 500000,
+    "description": "单局最高得分阈值，超过此值视为异常",
+    "throttle_submit_interval_seconds": 1,
+    "validation_rules": [
+      "分数必须 <= 单局阈值",
+      "提交间隔不低于1秒（防批量刷榜）",
+      "服务端仲裁关键结算（二期）"
+    ]
+  },
+  "special_features": {
+    "lock_chain": {
+      "name": "激光锁定链",
+      "description": "捕获特定鱼后，短时间内子弹自动追踪",
+      "priority": "二期"
+    },
+    "boss_wave": {
+      "name": "Boss潮",
+      "description": "每隔几分钟屏幕涌入鱼群/巨型Boss",
+      "duration_seconds": 15,
+      "priority": "二期"
+    },
+    "coin_rain": {
+      "name": "金币雨",
+      "description": "捕获元宝鱼掉落一地金币动画",
+      "priority": "MVP"
+    },
+    "chain_explosion": {
+      "name": "连锁爆炸",
+      "description": "灯笼鱼捕获后引爆周边小鱼",
+      "priority": "MVP"
+    }
+  },
+  "mvp_scope": {
+    "core_mechanics": [
+      "炮台+炮倍切换（1/2/5/10×）",
+      "瞄准射击",
+      "鱼类系统（4-5种基础鱼+1种特殊鱼）",
+      "血量/赔率/捕获率结算",
+      "金币收支"
+    ],
+    "special_fish": [
+      "元宝鱼（金币雨）- 给足正反馈"
+    ],
+    "pages": [
+      "大厅",
+      "游戏",
+      "结算"
+    ],
+    "features": [
+      "新手引导浮层（炮倍使用说明）",
+      "每日免费金币系统",
+      "排行榜（后端存分+反作弊阈值）",
+      "最简音效（开炮/命中/金币）"
+    ],
+    "technical": [
+      "RTP蒙特卡洛校验脚本"
+    ]
+  },
+  "phase_2_features": [
+    "完整特殊鱼（灯笼鱼/锁定链/Boss潮）",
+    "全套音乐音效",
+    "粒子特效增强",
+    "移动端触屏适配",
+    "成就/任务系统",
+    "皮肤系统（炮台/鱼类皮肤）",
+    "周赛榜重置",
+    "限时活动buff"
+  ],
+  "validation_checklist": {
+    "rtp": "实测92%-96%（蒙特卡洛+灰度数据双验）",
+    "cannon_usage": "高炮倍被充分使用",
+    "session_duration": "每日免费金币支撑20-30分钟",
+    "retention": "排行榜与每日金币驱动回访",
+    "new_player_aha": "新手在前30秒内获得正反馈（第一条大鱼）",
+    "cheat_detection": "榜单无异常高分"
+  }
+}
