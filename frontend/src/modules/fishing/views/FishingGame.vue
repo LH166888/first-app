@@ -1,335 +1,181 @@
 <template>
   <div class="fishing-game">
-    <div class="game-hud">
-      <div class="hud-left">
-        <div class="hud-item">
-          <span class="label">金币:</span>
-          <span class="value">{{ sessionCoins }}</span>
-        </div>
-        <div class="hud-item">
-          <span class="label">分数:</span>
-          <span class="value">{{ currentScore }}</span>
-        </div>
-      </div>
-      <div class="hud-center">
-        <span class="title">怀旧捕鱼机</span>
-      </div>
-      <div class="hud-right">
-        <div class="hud-item">
-          <span class="label">炮倍:</span>
-          <span class="value">{{ cannonMultiplier }}×</span>
-        </div>
-        <button class="exit-btn" @click="exitGame">退出</button>
-      </div>
-    </div>
+    <GameHUD
+      :coins="coins"
+      :score="score"
+      :multiplier="multiplier"
+      :multipliers="multipliers"
+      :paused="paused"
+      @set-multiplier="setMultiplier"
+      @toggle-pause="togglePause"
+      @exit="onExit"
+    />
 
-    <div class="game-canvas-container">
-      <canvas
-        ref="gameCanvas"
-        class="game-canvas"
-        :width="canvasWidth"
-        :height="canvasHeight"
-      ></canvas>
-    </div>
-
-    <div class="game-controls">
-      <button class="control-btn" @click="changeMultiplier(-1)">炮倍-</button>
-      <div class="multiplier-display">
-        <span>{{ cannonMultiplier }}×</span>
-      </div>
-      <button class="control-btn" @click="changeMultiplier(1)">炮倍+</button>
-    </div>
-
-    <!-- Result Modal -->
-    <div v-if="showResult" class="result-modal">
-      <div class="result-card">
-        <h2>游戏结束</h2>
-        <div class="result-stats">
-          <div class="stat">
-            <span class="label">最终分数</span>
-            <span class="value">{{ currentScore }}</span>
-          </div>
-          <div class="stat">
-            <span class="label">捕获鱼数</span>
-            <span class="value">{{ stats.fishCaught }}</span>
-          </div>
-          <div class="stat">
-            <span class="label">排名</span>
-            <span class="value">#{{ playerRank || '新' }}</span>
-          </div>
-        </div>
-        <div class="result-buttons">
-          <button class="btn btn-primary" @click="playAgain">再来一局</button>
-          <button class="btn btn-secondary" @click="backToLobby">回到大厅</button>
-        </div>
-      </div>
+    <div class="stage">
+      <GameCanvas
+        ref="canvasRef"
+        @update="onUpdate"
+        @gameover="onGameOver"
+        @cannot-afford="onCannotAfford"
+      />
+      <transition name="fade">
+        <div v-if="toast" class="toast">{{ toast }}</div>
+      </transition>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { fishingStore, resetGameSession, updatePlayerCoins, addScore } from '../store'
+import config from '../config/games-fishing-config.json'
+import GameHUD from '../components/GameHUD.vue'
+import GameCanvas from '../components/GameCanvas.vue'
+import { fishingStore, syncCoins, setLastResult } from '../store'
 import { submitScore } from '../api/leaderboard'
 
 const router = useRouter()
-const gameCanvas = ref(null)
-const canvasWidth = ref(1200)
-const canvasHeight = ref(600)
+const multipliers = config.cannon_mechanics.multipliers
+const maxSessionCoins = config.anti_cheat.max_single_session_coins
 
-const sessionCoins = ref(fishingStore.gameConfig.sessionCoins)
-const currentScore = ref(0)
-const cannonMultiplier = ref(1)
-const showResult = ref(false)
-const stats = ref({ fishCaught: 0, bulletsShot: 0, maxCombo: 0 })
-const playerRank = ref(null)
-
-let gameEngine = null
-let animationFrameId = null
+const canvasRef = ref(null)
+const coins = ref(fishingStore.coins)
+const score = ref(0)
+const coinsWon = ref(0)
+const multiplier = ref(1)
+const paused = ref(false)
+const stats = ref({ fishCaught: 0, bulletsShot: 0 })
+const toast = ref('')
+let ending = false
+let toastTimer = null
 
 onMounted(() => {
-  // Initialize game engine here
-  // This is a placeholder - actual implementation in AI-9 task
-  console.log('Game initialized with canvas:', gameCanvas.value)
+  // 子组件 GameCanvas 已挂载，引擎就绪，直接开局
+  canvasRef.value.start(fishingStore.coins)
 })
 
-onUnmounted(() => {
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId)
+function onUpdate(s) {
+  coins.value = s.coins
+  score.value = s.score
+  coinsWon.value = s.coinsWon
+  multiplier.value = s.multiplier
+  stats.value = s.stats
+}
+
+function setMultiplier(m) {
+  canvasRef.value?.setMultiplier(m)
+}
+
+function togglePause() {
+  canvasRef.value?.togglePause()
+  paused.value = !paused.value
+}
+
+function onCannotAfford() {
+  showToast('金币不足，请降低炮倍')
+}
+
+function showToast(msg) {
+  toast.value = msg
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => (toast.value = ''), 1600)
+}
+
+async function onGameOver(result) {
+  await endSession(result)
+}
+
+async function onExit() {
+  if (ending) return
+  canvasRef.value?.pause()
+  paused.value = true
+  if (!confirm('退出将结算本局成绩，确定退出？')) {
+    canvasRef.value?.resume()
+    paused.value = false
+    return
   }
-})
-
-const changeMultiplier = (delta) => {
-  const multipliers = [1, 2, 5, 10]
-  const currentIndex = multipliers.indexOf(cannonMultiplier.value)
-  const newIndex = Math.max(0, Math.min(multipliers.length - 1, currentIndex + delta))
-  cannonMultiplier.value = multipliers[newIndex]
+  // 手动退出：用当前 HUD 数据结算
+  await endSession({
+    score: Math.max(0, score.value),
+    coinsWon: coinsWon.value,
+    coinsLeft: coins.value,
+    fishCaught: stats.value.fishCaught,
+    bulletsShot: stats.value.bulletsShot,
+  })
 }
 
-const exitGame = async () => {
-  if (confirm('确定要退出游戏吗？')) {
-    await submitGameResult()
-    router.push('/games/fishing')
+async function endSession(result) {
+  if (ending) return
+  ending = true
+
+  syncCoins(result.coinsLeft ?? coins.value)
+
+  const clampedScore = Math.min(maxSessionCoins, Math.max(0, result.score))
+  const isNewRecord = clampedScore > fishingStore.bestScore
+  let rank = null
+  let submitError = false
+
+  // 仅在有正净分时上报；未登录/网络错误静默降级
+  if (clampedScore > 0) {
+    try {
+      const res = await submitScore({ score: clampedScore, coinsWon: result.coinsWon })
+      rank = res.rank ?? null
+    } catch {
+      submitError = true
+    }
   }
-}
 
-const playAgain = () => {
-  resetGameSession()
-  showResult.value = false
-}
+  if (isNewRecord) fishingStore.bestScore = clampedScore
+  if (rank != null) fishingStore.rank = rank
 
-const backToLobby = () => {
-  router.push('/games/fishing')
-}
+  setLastResult({
+    score: clampedScore,
+    coinsWon: result.coinsWon,
+    coinsLeft: result.coinsLeft ?? coins.value,
+    fishCaught: result.fishCaught,
+    bulletsShot: result.bulletsShot,
+    rank,
+    isNewRecord,
+    submitError,
+  })
 
-const submitGameResult = async () => {
-  try {
-    const result = await submitScore({
-      score: currentScore.value,
-      coinsWon: stats.value.fishCaught * 10, // Simplified calculation
-      fishCaught: stats.value.fishCaught,
-      bulletsShot: stats.value.bulletsShot
-    })
-    playerRank.value = result.rank
-  } catch (e) {
-    console.error('Failed to submit score:', e)
-  }
+  router.push('/games/fishing/result')
 }
 </script>
 
 <style scoped>
 .fishing-game {
   width: 100%;
-  height: 100vh;
-  background: linear-gradient(135deg, #0a1a3a, #04305c);
+  height: 100%;
+  min-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
-  color: #fff;
-  font-family: 'Courier New', monospace;
+  background: #000814;
 }
-
-.game-hud {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.4);
-  border-bottom: 2px solid #ffcf40;
-}
-
-.hud-left,
-.hud-right {
-  display: flex;
-  gap: 20px;
-}
-
-.hud-center {
+.stage {
   flex: 1;
-  text-align: center;
-  font-size: 1.5em;
-  color: #ffcf40;
-  font-weight: bold;
+  position: relative;
+  min-height: 0;
 }
-
-.hud-item {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.label {
-  color: #aaa;
-  font-size: 0.9em;
-}
-
-.value {
-  color: #ffcf40;
-  font-weight: bold;
-  font-size: 1.1em;
-}
-
-.exit-btn {
-  padding: 5px 15px;
-  background: #ff4444;
-  border: none;
+.toast {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(224, 49, 49, 0.92);
   color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.game-canvas-container {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-.game-canvas {
-  border: 3px solid #ffcf40;
-  background: #000;
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.game-controls {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 15px;
-  background: rgba(0, 0, 0, 0.4);
-  border-top: 2px solid #ffcf40;
-}
-
-.control-btn {
   padding: 10px 20px;
-  background: linear-gradient(135deg, #ff6b35, #ff4500);
-  border: none;
-  color: #fff;
-  font-weight: bold;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  border-radius: 999px;
+  font-weight: 700;
+  z-index: 10;
+  pointer-events: none;
 }
-
-.control-btn:hover {
-  transform: scale(1.05);
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
 }
-
-.multiplier-display {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 80px;
-  font-size: 1.3em;
-  color: #ffcf40;
-  font-weight: bold;
-}
-
-/* Result Modal */
-.result-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.result-card {
-  background: linear-gradient(135deg, #0a1a3a, #04305c);
-  border: 3px solid #ffcf40;
-  padding: 30px;
-  border-radius: 10px;
-  text-align: center;
-  min-width: 300px;
-}
-
-.result-card h2 {
-  color: #ffcf40;
-  margin: 0 0 20px 0;
-  font-size: 1.8em;
-}
-
-.result-stats {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 15px;
-  margin: 20px 0;
-}
-
-.stat {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 10px;
-  border-radius: 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.stat .label {
-  color: #aaa;
-}
-
-.stat .value {
-  color: #ffcf40;
-  font-size: 1.3em;
-  font-weight: bold;
-}
-
-.result-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.btn {
-  padding: 10px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #ffcf40, #ff9500);
-  color: #000;
-}
-
-.btn-secondary {
-  background: rgba(255, 207, 64, 0.2);
-  color: #ffcf40;
-  border: 2px solid #ffcf40;
-}
-
-.btn:hover {
-  transform: scale(1.05);
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
