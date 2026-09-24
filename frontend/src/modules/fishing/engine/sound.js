@@ -1,25 +1,29 @@
 /**
- * 音效接口（MVP 桩实现）
+ * 音效接口 — 用真实素材替换合成桩
  *
- * 不依赖任何音频素材文件：用 WebAudio 合成极简提示音，保证「开炮/命中/捕获/金币」
- * 有即时听感反馈；素材接入见文末 TODO。若浏览器不支持 WebAudio 则静默降级。
- *
- * 对外只暴露一个稳定接口：play(name)，name ∈ 'shoot' | 'hit' | 'capture' | 'coin'
- * 引擎只调用 play()，与具体发声方式解耦，二期替换为真实素材时无需改引擎。
+ * 首次用户交互时创建 AudioContext 并异步预加载所有 AudioBuffer；
+ * 加载完成前 play() 静默跳过（不报错）。接口签名零改动：
+ *   play(name)   name ∈ 'shoot' | 'hit' | 'capture' | 'coin'
+ *   setEnabled(on)
+ *   destroy()
+ * BGM 默认关闭，可通过 startBgm() / stopBgm() 控制。
  */
 
-// 每种音效的合成参数：波形 / 起始频率 / 结束频率 / 时长(秒) / 音量
-const TONES = {
-  shoot: { type: 'square', from: 220, to: 120, dur: 0.08, gain: 0.06 },
-  hit: { type: 'triangle', from: 320, to: 180, dur: 0.06, gain: 0.05 },
-  capture: { type: 'sawtooth', from: 440, to: 880, dur: 0.18, gain: 0.07 },
-  coin: { type: 'sine', from: 880, to: 1320, dur: 0.14, gain: 0.06 },
+const SFX_URLS = {
+  shoot:   new URL('../assets/sfx_shoot.wav',   import.meta.url).href,
+  hit:     new URL('../assets/sfx_hit.wav',     import.meta.url).href,
+  capture: new URL('../assets/sfx_capture.wav', import.meta.url).href,
+  coin:    new URL('../assets/sfx_coin.wav',    import.meta.url).href,
 }
+const BGM_URL = new URL('../assets/bgm_loop.wav', import.meta.url).href
 
 export class SoundManager {
   constructor() {
     this.enabled = true
     this.ctx = null
+    this._buffers = {}   // name → AudioBuffer，加载后填入
+    this._bgmSource = null
+    this._bgmBuffer = null
   }
 
   // 首次用户交互后再创建 AudioContext（浏览器自动播放策略要求）
@@ -29,51 +33,82 @@ export class SoundManager {
     if (!AC) return null
     try {
       this.ctx = new AC()
+      this._preload()
     } catch {
       this.ctx = null
     }
     return this.ctx
   }
 
+  async _preload() {
+    const ctx = this.ctx
+    if (!ctx) return
+    // 并行加载所有音效
+    await Promise.all(
+      Object.entries(SFX_URLS).map(async ([name, url]) => {
+        try {
+          const res = await fetch(url)
+          const ab = await res.arrayBuffer()
+          this._buffers[name] = await ctx.decodeAudioData(ab)
+        } catch { /* 单个文件加载失败不影响其余音效 */ }
+      })
+    )
+    // BGM 单独预加载
+    try {
+      const res = await fetch(BGM_URL)
+      const ab = await res.arrayBuffer()
+      this._bgmBuffer = await ctx.decodeAudioData(ab)
+    } catch { /* BGM 可选，失败静默 */ }
+  }
+
   setEnabled(on) {
     this.enabled = !!on
+    if (!on) this.stopBgm()
   }
 
   play(name) {
     if (!this.enabled) return
-    const tone = TONES[name]
-    if (!tone) return
     const ctx = this._ensureCtx()
     if (!ctx) return
     if (ctx.state === 'suspended') ctx.resume()
 
-    const now = ctx.currentTime
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
+    const buf = this._buffers[name]
+    if (!buf) return  // 未加载完成，静默跳过
 
-    osc.type = tone.type
-    osc.frequency.setValueAtTime(tone.from, now)
-    osc.frequency.exponentialRampToValueAtTime(tone.to, now + tone.dur)
+    const src = ctx.createBufferSource()
+    src.buffer = buf
+    src.connect(ctx.destination)
+    src.start()
+  }
 
-    gain.gain.setValueAtTime(tone.gain, now)
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + tone.dur)
+  startBgm() {
+    const ctx = this._ensureCtx()
+    if (!ctx || !this._bgmBuffer || this._bgmSource) return
+    if (ctx.state === 'suspended') ctx.resume()
+    const src = ctx.createBufferSource()
+    src.buffer = this._bgmBuffer
+    src.loop = true
+    src.connect(ctx.destination)
+    src.start()
+    this._bgmSource = src
+  }
 
-    osc.connect(gain).connect(ctx.destination)
-    osc.start(now)
-    osc.stop(now + tone.dur)
+  stopBgm() {
+    if (this._bgmSource) {
+      try { this._bgmSource.stop() } catch { /* ignore */ }
+      this._bgmSource = null
+    }
   }
 
   destroy() {
+    this.stopBgm()
     if (this.ctx && this.ctx.state !== 'closed') {
-      try {
-        this.ctx.close()
-      } catch {
-        /* ignore */
-      }
+      try { this.ctx.close() } catch { /* ignore */ }
     }
     this.ctx = null
+    this._buffers = {}
+    this._bgmBuffer = null
   }
 }
 
-// TODO(二期): 用 <audio>/AudioBuffer 加载真实素材，映射到相同的 play(name) 接口即可。
 export default SoundManager
