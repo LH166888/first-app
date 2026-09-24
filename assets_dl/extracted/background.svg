@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+  <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#04305c"/>
+    <stop offset="35%" stop-color="#02244a"/>
+    <stop offset="65%" stop-color="#012349"/>
+    <stop offset="100%" stop-color="#000814"/>
+  </linearGradient>
+  <radialGradient id="surf" cx="50%" cy="0%" r="65%">
+    <stop offset="0%" stop-color="#78c8ff" stop-opacity="0.22"/>
+    <stop offset="100%" stop-color="#78c8ff" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="depth" cx="50%" cy="100%" r="55%">
+    <stop offset="0%" stop-color="#000030" stop-opacity="0.55"/>
+    <stop offset="100%" stop-color="#000030" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+  <filter id="rockblur"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<!-- 海底渐变 -->
+<rect width="1920" height="1080" fill="url(#sea)"/>
+<!-- 海面透光 -->
+<rect width="1920" height="1080" fill="url(#surf)"/>
+<!-- 海底暗角 -->
+<rect width="1920" height="1080" fill="url(#depth)"/>
+<!-- 远景礁石剪影 -->
+<ellipse cx="260" cy="1080" rx="320" ry="130" fill="#011828" opacity="0.65" filter="url(#rockblur)"/>
+<ellipse cx="1660" cy="1080" rx="280" ry="110" fill="#011828" opacity="0.6" filter="url(#rockblur)"/>
+<ellipse cx="960" cy="1080" rx="200" ry="80" fill="#012038" opacity="0.5" filter="url(#rockblur)"/>
+<!-- 珊瑚礁（左） -->
+<path d="M80,1080 Q90,960 100,920 Q110,880 120,920 Q130,880 140,840 Q150,880 160,840 Q170,880 180,920 Q190,960 200,1080 Z" fill="#c04040" opacity="0.45"/>
+<path d="M55,1080 Q65,990 72,960 Q80,930 88,960 Q96,930 104,900 Q112,930 120,960 Q128,990 136,1080 Z" fill="#a03030" opacity="0.4"/>
+<!-- 珊瑚礁（右） -->
+<path d="M1720,1080 Q1730,950 1745,910 Q1760,870 1775,910 Q1790,870 1805,830 Q1820,870 1835,910 Q1848,950 1860,1080 Z" fill="#c04040" opacity="0.42"/>
+<!-- 海草（左下） -->
+<path d="M150,1080 Q140,1010 155,980 Q170,950 160,920 Q150,890 165,860" fill="none" stroke="#1a6a30" stroke-width="6" stroke-linecap="round" opacity="0.55"/>
+<path d="M190,1080 Q205,1000 195,965 Q185,930 200,895" fill="none" stroke="#1a6a30" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+<!-- 海草（右下） -->
+<path d="M1780,1080 Q1770,1015 1785,980 Q1800,945 1790,910" fill="none" stroke="#1a6a30" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+<!-- 远景气泡（大颗，半透明） -->
+<circle cx="400" cy="700" r="6" fill="none" stroke="#b4e1ff" stroke-width="1.5" opacity="0.18"/>
+<circle cx="680" cy="580" r="4" fill="none" stroke="#b4e1ff" stroke-width="1.2" opacity="0.15"/>
+<circle cx="1240" cy="640" r="5" fill="none" stroke="#b4e1ff" stroke-width="1.3" opacity="0.16"/>
+<circle cx="1560" cy="520" r="7" fill="none" stroke="#b4e1ff" stroke-width="1.5" opacity="0.14"/>
+<!-- 海面波光（顶部细条，营造水面折射） -->
+<path d="M0,8 Q240,0 480,8 Q720,16 960,8 Q1200,0 1440,8 Q1680,16 1920,8" fill="none" stroke="#78c8ff" stroke-width="2" opacity="0.18"/>
+<path d="M0,22 Q320,14 640,22 Q960,30 1280,22 Q1600,14 1920,22" fill="none" stroke="#78c8ff" stroke-width="1.5" opacity="0.12"/>
+</svg>

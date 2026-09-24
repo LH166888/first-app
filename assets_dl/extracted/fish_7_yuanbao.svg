@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="384" viewBox="-384 -192 768 384">
+<defs>
+  <radialGradient id="b7" cx="40%" cy="38%" r="58%"><stop offset="0%" stop-color="#fffde0"/><stop offset="40%" stop-color="#ffd700"/><stop offset="80%" stop-color="#cc8800"/><stop offset="100%" stop-color="#7a4a00"/></radialGradient>
+  <radialGradient id="ingot7" cx="50%" cy="42%" r="52%"><stop offset="0%" stop-color="#fffde0"/><stop offset="55%" stop-color="#ffd700"/><stop offset="100%" stop-color="#aa6600"/></radialGradient>
+  <radialGradient id="hl7" cx="35%" cy="25%" r="40%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.75"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+  <filter id="glow7" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="10"/></filter>
+</defs>
+<!-- 金色光晕 -->
+<ellipse cx="0" cy="0" rx="210" ry="115" fill="#ffd700" opacity="0.14" filter="url(#glow7)"/>
+<!-- 尾鳍（宽扇形，金色） -->
+<path d="M-215,0 Q-310,-90 -295,-30 L-255,0 L-295,30 Q-310,90 -215,0" fill="#cc8800" opacity="0.9"/>
+<path d="M-205,0 Q-285,-60 -272,-15 L-245,0 L-272,15 Q-285,60 -205,0" fill="#ffc000" opacity="0.7"/>
+<!-- 背鳍（圆弧形） -->
+<path d="M-40,-92 Q10,-128 65,-106 Q45,-84 0,-80 Z" fill="#ccaa00" opacity="0.9"/>
+<!-- 腹鳍 -->
+<path d="M10,86 Q45,112 70,90 Q40,78 10,86" fill="#ccaa00" opacity="0.85"/>
+<!-- 元宝形身体（胖椭圆，腹部宽） -->
+<ellipse cx="0" cy="8" rx="198" ry="96" fill="url(#b7)"/>
+<!-- 腹部元宝纹（凸起弧） -->
+<path d="M-80,60 Q0,105 80,60 Q0,88 -80,60 Z" fill="#ffdd44" opacity="0.35"/>
+<!-- 金鳞纹路 -->
+<ellipse cx="-70" cy="0" rx="52" ry="36" fill="none" stroke="#bb8800" stroke-width="1.2" opacity="0.4"/>
+<ellipse cx="30" cy="5" rx="48" ry="32" fill="none" stroke="#bb8800" stroke-width="1.2" opacity="0.35"/>
+<ellipse cx="120" cy="0" rx="42" ry="28" fill="none" stroke="#bb8800" stroke-width="1" opacity="0.3"/>
+<!-- 高光 -->
+<ellipse cx="-15" cy="-15" rx="82" ry="38" fill="url(#hl7)"/>
+<!-- 元宝背饰 -->
+<path d="M-30,-88 Q0,-108 30,-88 Q10,-76 -30,-88 Z" fill="#ffd700" opacity="0.8"/>
+<!-- 眼（圆大，财运眼） -->
+<circle cx="158" cy="-16" r="20" fill="#fffde0" stroke="#886600" stroke-width="2"/>
+<circle cx="160" cy="-15" r="12" fill="#1a0e00"/>
+<circle cx="156" cy="-19" r="5.5" fill="#ffffff" opacity="0.9"/>
+<circle cx="164" cy="-10" r="3" fill="#ffd700" opacity="0.7"/>
+<!-- 嘴（圆满微笑） -->
+<path d="M175,8 Q192,22 175,34" fill="none" stroke="#996600" stroke-width="3" stroke-linecap="round"/>
+<!-- 下巴金饰 -->
+<path d="M175,34 Q185,42 178,46 Q168,44 175,34 Z" fill="#ffd700" opacity="0.7"/>
+</svg>
