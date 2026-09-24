@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="384" viewBox="-384 -192 768 384">
+<defs>
+  <linearGradient id="b6" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ff9500"/><stop offset="35%" stop-color="#ffd700"/><stop offset="65%" stop-color="#ffec80"/><stop offset="100%" stop-color="#ff8000"/></linearGradient>
+  <radialGradient id="hl6" cx="38%" cy="28%" r="45%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.7"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="eye6" cx="40%" cy="38%" r="55%"><stop offset="0%" stop-color="#ffe066"/><stop offset="100%" stop-color="#ff6000"/></radialGradient>
+  <filter id="glow6" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<!-- 发光光晕 -->
+<ellipse cx="0" cy="0" rx="200" ry="110" fill="#ffaa00" opacity="0.12" filter="url(#glow6)"/>
+<!-- 尾鳍（华丽双叉，龙尾） -->
+<path d="M-220,0 Q-310,-80 -300,-30 L-260,0 L-300,30 Q-310,80 -220,0" fill="#ff8800" opacity="0.9"/>
+<path d="M-210,0 Q-290,-55 -280,-15 L-250,0 L-280,15 Q-290,55 -210,0" fill="#ffc000" opacity="0.7"/>
+<!-- 背鳍（长锯齿状，龙鳍） -->
+<path d="M-100,-96 Q-60,-140 -10,-120 Q30,-160 70,-130 Q100,-156 130,-118 Q108,-96 80,-90 Q50,-115 20,-92 Q-10,-120 -50,-98 Q-75,-120 -100,-96 Z" fill="#ffaa00" opacity="0.9"/>
+<!-- 腹鳍 -->
+<path d="M-20,85 Q20,115 55,92 Q25,78 -20,85" fill="#ff9000" opacity="0.85"/>
+<!-- 龙须（两根触须） -->
+<path d="M155,-20 Q200,-60 220,-45" fill="none" stroke="#ffd700" stroke-width="3" stroke-linecap="round"/>
+<path d="M155,-12 Q195,20 210,15" fill="none" stroke="#ffd700" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="220" cy="-45" r="5" fill="#ffd700"/>
+<circle cx="210" cy="15" r="4" fill="#ffd700"/>
+<!-- 鱼身（修长，流线） -->
+<ellipse cx="0" cy="0" rx="200" ry="88" fill="url(#b6)"/>
+<!-- 金鳞纹路 -->
+<path d="M-120,-30 Q-60,-45 60,-30 Q-60,-18 -120,-30 Z" fill="#ffcc00" opacity="0.3"/>
+<path d="M-80,15 Q0,28 120,15 Q0,5 -80,15 Z" fill="#ff9500" opacity="0.25"/>
+<path d="M-150,-10 Q-80,5 -150,18 Z" fill="#ffcc00" opacity="0.2"/>
+<!-- 鱼鳞叠片 -->
+<ellipse cx="-60" cy="-5" rx="50" ry="32" fill="none" stroke="#cc7700" stroke-width="1" opacity="0.35"/>
+<ellipse cx="30" cy="-5" rx="45" ry="28" fill="none" stroke="#cc7700" stroke-width="1" opacity="0.3"/>
+<ellipse cx="110" cy="-5" rx="38" ry="24" fill="none" stroke="#cc7700" stroke-width="1" opacity="0.25"/>
+<!-- 高光 -->
+<ellipse cx="-10" cy="-20" rx="80" ry="36" fill="url(#hl6)"/>
+<!-- 眼（宝石状，发光） -->
+<circle cx="162" cy="-18" r="18" fill="url(#eye6)" stroke="#884400" stroke-width="2"/>
+<circle cx="164" cy="-17" r="11" fill="#1a0800"/>
+<circle cx="160" cy="-21" r="5" fill="#ffffff" opacity="0.9"/>
+<circle cx="168" cy="-13" r="2.5" fill="#ffd700" opacity="0.7"/>
+<!-- 龙角 -->
+<path d="M140,-55 Q155,-85 148,-90 Q138,-80 135,-55 Z" fill="#ffcc44" opacity="0.85"/>
+<path d="M160,-50 Q178,-75 172,-80 Q160,-70 156,-50 Z" fill="#ffcc44" opacity="0.8"/>
+<!-- 嘴 -->
+<path d="M178,5 Q195,18 178,30" fill="none" stroke="#aa5500" stroke-width="3" stroke-linecap="round"/>
+</svg>
