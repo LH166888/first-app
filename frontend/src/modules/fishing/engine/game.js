@@ -206,7 +206,9 @@ export class FishingGame {
 
     // 鱼推进
     for (let i = this.fishes.length - 1; i >= 0; i--) {
-      if (!P.stepFish(this.fishes[i], dt, this.w, this.h)) this.fishes.splice(i, 1)
+      const f = this.fishes[i]
+      if (f.hitFlash > 0) f.hitFlash -= dt // 纯表现：受击白闪计时衰减，不参与任何数值
+      if (!P.stepFish(f, dt, this.w, this.h)) this.fishes.splice(i, 1)
     }
 
     // 特效推进
@@ -224,11 +226,13 @@ export class FishingGame {
     this.bullets.splice(bulletIdx, 1)
     this.sound.play('hit')
 
+    fish.hitFlash = 0.22 // 受击视觉反馈（抖动/白闪），纯表现，不影响判定
+
     const rate = P.catchRate(fish.baseCatchRate, bullet.multiplier, AMP)
     if (Math.random() < rate) {
       this._capture(fish, fishIdx, bullet.multiplier)
     } else {
-      this.effects.push({ type: 'hit', x: fish.x, y: fish.y, life: 0.3, maxLife: 0.3 })
+      this.effects.push({ type: 'hit', x: fish.x, y: fish.y, life: 0.3, maxLife: 0.3, seed: Math.random() * Math.PI * 2 })
     }
   }
 

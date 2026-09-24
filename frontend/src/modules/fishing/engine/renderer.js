@@ -5,6 +5,7 @@
  * 气泡粒子（不影响玩法）。
  */
 import config from '../config/games-fishing-config.json'
+import { Seabed } from './seabed'
 
 // 炮倍配色（用于瞄准辅助线、子弹 tint）
 const MULT_COLORS = { 1: '#00e5ff', 2: '#7c5cff', 5: '#ff922b', 10: '#ff1744' }
@@ -39,8 +40,6 @@ const CANNON_IMAGES = {
 // 通用素材
 const BULLET_URL = new URL('../assets/bullet.png', import.meta.url).href
 const COIN_URL = new URL('../assets/coin.png', import.meta.url).href
-const BG_URL = new URL('../assets/background.png', import.meta.url).href
-const EFFECT_HIT_URL = new URL('../assets/effect_hit.png', import.meta.url).href
 const EFFECT_CAPTURE_URL = new URL('../assets/effect_capture.png', import.meta.url).href
 
 // ===== 图片预加载器 =====
@@ -82,6 +81,7 @@ export class Renderer {
     this.ctx = ctx
     this.w = w
     this.h = h
+    this.seabed = new Seabed(w, h)
     this.bubbles = []
     this._initBubbles()
     this._preloadAssets()
@@ -90,6 +90,7 @@ export class Renderer {
   resize(w, h) {
     this.w = w
     this.h = h
+    this.seabed.resize(w, h)
     this._initBubbles()
   }
 
@@ -99,8 +100,6 @@ export class Renderer {
     Object.values(CANNON_IMAGES).forEach(url => imageLoader.load(url))
     imageLoader.load(BULLET_URL)
     imageLoader.load(COIN_URL)
-    imageLoader.load(BG_URL)
-    imageLoader.load(EFFECT_HIT_URL)
     imageLoader.load(EFFECT_CAPTURE_URL)
   }
 
@@ -118,44 +117,18 @@ export class Renderer {
 
   render(state, dt) {
     const { ctx } = this
-    this._drawBackground()
+    // 动态海底背景（底层）
+    this.seabed.drawBack(ctx, dt)
     this._drawBubbles(dt)
-    for (const fish of state.fishes) this._drawFish(fish)
+    for (const fish of state.fishes) this._drawFish(fish, dt)
     for (const b of state.bullets) this._drawBullet(b)
     this._drawEffects(state.effects)
     this._drawCannon(state.cannon, state.aim)
+    // 前景微粒 + 暗角/色调分级（在所有实体之上，统一氛围）
+    this.seabed.drawFront(ctx, dt)
     if (state.paused) this._drawPausedMask()
     ctx.textAlign = 'left'
     ctx.textBaseline = 'alphabetic'
-  }
-
-  _drawBackground() {
-    const { ctx, w, h } = this
-    const bgImg = imageLoader.get(BG_URL)
-    if (bgImg) {
-      // 背景图 1920×1080，按画布比例缩放并居中绘制（保持覆盖，裁切溢出）
-      const scale = Math.max(w / bgImg.width, h / bgImg.height)
-      const sw = w / scale
-      const sh = h / scale
-      const sx = (bgImg.width - sw) / 2
-      const sy = (bgImg.height - sh) / 2
-      ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, w, h)
-    } else {
-      // 降级：渐变背景
-      const g = ctx.createLinearGradient(0, 0, 0, h)
-      g.addColorStop(0, '#04305c')
-      g.addColorStop(0.55, '#012349')
-      g.addColorStop(1, '#000814')
-      ctx.fillStyle = g
-      ctx.fillRect(0, 0, w, h)
-
-      // 顶部光晕
-      const rg = ctx.createRadialGradient(w / 2, -h * 0.2, 0, w / 2, -h * 0.2, h)
-      rg.addColorStop(0, 'rgba(120, 200, 255, 0.18)')
-      rg.addColorStop(1, 'rgba(120, 200, 255, 0)')
-      ctx.fillStyle = rg
-      ctx.fillRect(0, 0, w, h)
-    }
   }
 
   _drawBubbles(dt) {
@@ -176,27 +149,64 @@ export class Renderer {
     ctx.restore()
   }
 
-  _drawFish(fish) {
+  _drawFish(fish, dt) {
     const { ctx } = this
     const img = imageLoader.get(FISH_IMAGES[fish.speciesId])
 
+    // ---- 平滑转向：facing 从 -1↔1 缓动，转身时水平收缩形成翻转过渡（纯渲染态，挂在 fish 上）----
+    const targetFacing = fish.vx < 0 ? -1 : 1
+    if (fish._facing === undefined) fish._facing = targetFacing
+    const k = Math.min(1, (dt || 0.016) * 10)
+    fish._facing += (targetFacing - fish._facing) * k
+    const facing = fish._facing
+    const flipScale = Math.max(0.12, Math.abs(facing)) * (facing < 0 ? -1 : 1)
+
+    // ---- 受击反馈：抖动 + 白闪 ----
+    const hf = fish.hitFlash > 0 ? fish.hitFlash / 0.22 : 0
+    const shakeX = hf ? (Math.random() - 0.5) * fish.radius * 0.5 * hf : 0
+    const shakeY = hf ? (Math.random() - 0.5) * fish.radius * 0.5 * hf : 0
+
+    // ---- 游动行波：沿身体从头到尾传播的正弦波，越靠尾摆幅越大 ----
+    const bendBase = Math.sin(fish.age * fish.wobbleFreq + fish.phase) * 0.22
+
     ctx.save()
-    ctx.translate(fish.x, fish.y)
-    // 朝向：按水平速度翻转
-    const facing = fish.vx < 0 ? -1 : 1
-    ctx.scale(facing, 1)
+    ctx.translate(fish.x + shakeX, fish.y + shakeY)
+    ctx.scale(flipScale, 1)
 
     if (img) {
-      // 鱼图中心锚点，按 radius 缩放绘制（源图约为推荐尺寸的 2×）
       const drawW = fish.radius * 2.5
       const drawH = (img.height / img.width) * drawW
-      ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH)
+      // 竖切片沿身体扫描：每片按到头部的距离取相位延迟，产生尾随摆动的“游动”而非整体平移
+      const SLICES = 10
+      const sliceW = img.width / SLICES
+      const dstSliceW = drawW / SLICES
+      for (let i = 0; i < SLICES; i++) {
+        const t = i / (SLICES - 1) // 0=尾 … 1=头（源图默认朝右，头在右）
+        const tailWeight = (1 - t) * (1 - t) // 越靠尾越大
+        const wavePhase = fish.age * fish.wobbleFreq + fish.phase - t * 2.4
+        const yOff = Math.sin(wavePhase) * fish.radius * 0.5 * tailWeight
+        const sx = i * sliceW
+        const dx = -drawW / 2 + i * dstSliceW
+        ctx.drawImage(img, sx, 0, sliceW, img.height, dx, -drawH / 2 + yOff, dstSliceW + 0.6, drawH)
+      }
+      if (hf) {
+        // 白闪叠加：用 lighter 提亮命中瞬间
+        ctx.save()
+        ctx.globalAlpha = hf * 0.6
+        ctx.globalCompositeOperation = 'lighter'
+        ctx.fillStyle = '#ffffff'
+        ctx.beginPath()
+        ctx.ellipse(0, 0, drawW * 0.42, drawH * 0.42, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+      }
     } else {
-      // 降级：占位色块（旧逻辑）
+      // 降级：占位色块 + 摆尾（无图时的兜底，观感仍然“在游”）
       const color = this._getFallbackFishColor(fish.speciesId)
-      const tail = Math.sin(fish.age * 8 + fish.phase) * fish.radius * 0.35
-      ctx.fillStyle = color
-      ctx.globalAlpha = 0.9
+      const tail = Math.sin(fish.age * fish.wobbleFreq * 1.6 + fish.phase) * fish.radius * 0.45
+      ctx.rotate(bendBase)
+      ctx.fillStyle = hf ? '#ffffff' : color
+      ctx.globalAlpha = 0.92
       ctx.beginPath()
       ctx.moveTo(-fish.radius * 0.8, 0)
       ctx.lineTo(-fish.radius * 1.5, tail - fish.radius * 0.4)
@@ -274,7 +284,6 @@ export class Renderer {
   _drawEffects(effects) {
     const { ctx } = this
     if (!effects) return
-    const hitImg = imageLoader.get(EFFECT_HIT_URL)
     const captureImg = imageLoader.get(EFFECT_CAPTURE_URL)
     const coinImg = imageLoader.get(COIN_URL)
 
@@ -289,19 +298,30 @@ export class Renderer {
         ctx.fillText(e.text, e.x, e.y)
         ctx.restore()
       } else if (e.type === 'hit') {
+        // 程序化命中特效：扩散圆环 + 放射火花（替代静态单图，无素材依赖）
+        const p = 1 - alpha // 进度 0→1
         ctx.save()
+        ctx.translate(e.x, e.y)
+        // 扩散圆环
+        const ringR = 6 + p * 26
         ctx.globalAlpha = alpha
-        if (hitImg) {
-          const scale = 0.4 + (1 - alpha) * 0.6  // 从小到大扩散
-          const size = hitImg.width * scale * 0.4
-          ctx.drawImage(hitImg, e.x - size / 2, e.y - size / 2, size, size)
-        } else {
-          // 降级：原圆圈
-          const r = (1 - alpha) * 22 + 4
-          ctx.strokeStyle = '#ffffff'
-          ctx.lineWidth = 2
+        ctx.strokeStyle = 'rgba(255,255,255,0.9)'
+        ctx.lineWidth = 2.5 * alpha + 0.5
+        ctx.beginPath()
+        ctx.arc(0, 0, ringR, 0, Math.PI * 2)
+        ctx.stroke()
+        // 放射火花
+        ctx.globalAlpha = alpha * 0.9
+        ctx.strokeStyle = '#ffe08a'
+        ctx.lineWidth = 2
+        const SPARKS = 6
+        for (let s = 0; s < SPARKS; s++) {
+          const a = (Math.PI * 2 * s) / SPARKS + (e.seed || 0)
+          const r0 = 4 + p * 10
+          const r1 = r0 + 8 * alpha + 4
           ctx.beginPath()
-          ctx.arc(e.x, e.y, r, 0, Math.PI * 2)
+          ctx.moveTo(Math.cos(a) * r0, Math.sin(a) * r0)
+          ctx.lineTo(Math.cos(a) * r1, Math.sin(a) * r1)
           ctx.stroke()
         }
         ctx.restore()

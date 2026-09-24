@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>fishing demo</title>
+  <style>
+    html, body { margin: 0; background: #000; }
+    #stage { width: 900px; height: 560px; }
+    canvas { display: block; width: 900px; height: 560px; }
+  </style>
+</head>
+<body>
+  <div id="stage"><canvas id="c" width="900" height="560"></canvas></div>
+  <script type="module">
+    import { FishingGame } from './src/modules/fishing/engine/game.js'
+
+    const canvas = document.getElementById('c')
+    const game = new FishingGame(canvas, {})
+    game.start(1000000)
+    game.setMultiplier(5)
+
+    // 自动瞄准最近的鱼并开火，制造命中/捕获特效
+    let tick = 0
+    setInterval(() => {
+      tick++
+      const fishes = game.fishes
+      if (fishes.length) {
+        const f = fishes[tick % fishes.length]
+        game.aimAt(f.x, f.y)
+      } else {
+        game.aimAt(450 + Math.sin(tick) * 200, 200)
+      }
+      game.fire()
+    }, 90)
+
+    window.__demoReady = true
+  </script>
+</body>
+</html>
