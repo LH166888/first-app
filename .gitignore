@@ -50,3 +50,7 @@ coverage/
 # 操作系统
 .DS_Store
 Thumbs.db
+
+# 临时素材暂存（成品已在 frontend/src/modules/*/assets/）
+assets_dl/
+attachments/
