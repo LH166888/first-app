@@ -28,6 +28,12 @@ function sizeCanvas() {
   }
 }
 
+// 手机横竖屏切换：部分浏览器 orientationchange 后布局尚未稳定，延迟再测量一次
+function onOrientationChange() {
+  sizeCanvas()
+  setTimeout(sizeCanvas, 300)
+}
+
 // ---- I/O 绑定：把 DOM 输入翻译成引擎方法调用 ----
 function toCanvasPoint(e) {
   const rect = canvas.value.getBoundingClientRect()
@@ -81,6 +87,7 @@ onMounted(() => {
   canvas.value.addEventListener('pointerdown', onPointerDown)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('resize', sizeCanvas)
+  window.addEventListener('orientationchange', onOrientationChange)
 })
 
 onBeforeUnmount(() => {
@@ -90,6 +97,7 @@ onBeforeUnmount(() => {
   }
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('resize', sizeCanvas)
+  window.removeEventListener('orientationchange', onOrientationChange)
   if (game) {
     game.destroy()
     game = null

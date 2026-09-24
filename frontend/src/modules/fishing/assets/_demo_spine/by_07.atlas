@@ -1,0 +1,76 @@
+
+by_07.png
+size: 722,88
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fish6/fish_6_0
+  rotate: true
+  xy: 2, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1
+fish6/fish_6_1
+  rotate: true
+  xy: 74, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1
+fish6/fish_6_2
+  rotate: true
+  xy: 146, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1
+fish6/fish_6_3
+  rotate: true
+  xy: 218, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1
+fish6/fish_6_4
+  rotate: true
+  xy: 290, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1
+fish6/fish_6_5
+  rotate: true
+  xy: 362, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1
+fish6/fish_6_6
+  rotate: true
+  xy: 434, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1
+fish6/fish_6_7
+  rotate: true
+  xy: 506, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1
+fish6/fish_6_8
+  rotate: true
+  xy: 578, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1
+fish6/fish_6_9
+  rotate: true
+  xy: 650, 2
+  size: 84, 70
+  orig: 84, 70
+  offset: 0, 0
+  index: -1

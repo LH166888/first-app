@@ -4,16 +4,8 @@
  * 只负责把「当前帧状态」画出来，自身不推进游戏逻辑；唯一持有的内部状态是纯装饰性的
  * 气泡粒子（不影响玩法）。
  */
-import config from '../config/games-fishing-config.json'
-
 // 炮倍配色（用于瞄准辅助线、子弹 tint）
 const MULT_COLORS = { 1: '#00e5ff', 2: '#7c5cff', 5: '#ff922b', 10: '#ff1744' }
-
-// 鱼种名（用于大鱼标签）
-const FISH_NAMES = config.fish_species.reduce((m, f) => {
-  m[f.id] = f.name
-  return m
-}, {})
 
 // ===== 资源 URL =====
 // 鱼 PNG（id → URL）
@@ -22,7 +14,6 @@ const FISH_IMAGES = {
   2: new URL('../assets/fish_2_tropical.png', import.meta.url).href,
   3: new URL('../assets/fish_3_puffer.png', import.meta.url).href,
   4: new URL('../assets/fish_4_turtle.png', import.meta.url).href,
-  8: new URL('../assets/fish_8_lantern.png', import.meta.url).href,
   5: new URL('../assets/fish_5_shark.png', import.meta.url).href,
   6: new URL('../assets/fish_6_golden_dragon.png', import.meta.url).href,
   7: new URL('../assets/fish_7_yuanbao.png', import.meta.url).href,
@@ -42,6 +33,80 @@ const COIN_URL = new URL('../assets/coin.png', import.meta.url).href
 const BG_URL = new URL('../assets/background.png', import.meta.url).href
 const EFFECT_HIT_URL = new URL('../assets/effect_hit.png', import.meta.url).href
 const EFFECT_CAPTURE_URL = new URL('../assets/effect_capture.png', import.meta.url).href
+
+// 序列帧图集
+const SPRITE_ATLAS_URLS = {
+  1: new URL('../assets/_demo_spine/by_01.png', import.meta.url).href,
+  2: new URL('../assets/_demo_spine/by_02.png', import.meta.url).href,
+  3: new URL('../assets/_demo_spine/by_03.png', import.meta.url).href,
+  4: new URL('../assets/_demo_spine/fish10.png', import.meta.url).href,
+  5: new URL('../assets/_demo_spine/shark1.png', import.meta.url).href,
+  6: new URL('../assets/_demo_spine/shark2.png', import.meta.url).href,
+  7: new URL('../assets/_demo_spine/by_07.png', import.meta.url).href,
+  8: new URL('../assets/_demo_spine/fish8.png', import.meta.url).href,
+}
+
+// fish10 (species 4) 乌龟逐帧坐标表（10 帧，ox/oy 为质心相对 bbox 左上角偏移，用于消除腿伸出时的漂移）
+const FISH10_FRAMES = [
+  { x: 9, y: 11, w: 167, h: 159, ox: 78, oy: 70 },   // 帧 0
+  { x: 9, y: 187, w: 165, h: 186, ox: 82, oy: 81 },   // 帧 1
+  { x: 9, y: 380, w: 163, h: 162, ox: 85, oy: 74 },   // 帧 2
+  { x: 9, y: 561, w: 165, h: 183, ox: 79, oy: 81 },   // 帧 3
+  { x: 10, y: 770, w: 167, h: 134, ox: 77, oy: 58 },  // 帧 4
+  { x: 10, y: 954, w: 168, h: 140, ox: 77, oy: 61 },  // 帧 5
+  { x: 7, y: 1143, w: 163, h: 152, ox: 81, oy: 61 },  // 帧 6
+  { x: 6, y: 1329, w: 159, h: 148, ox: 77, oy: 66 },  // 帧 7
+  { x: 4, y: 1513, w: 162, h: 152, ox: 81, oy: 64 },  // 帧 8
+  { x: 8, y: 1693, w: 160, h: 153, ox: 77, oy: 72 },  // 帧 9
+]
+
+// fish8 (species 8) 灯笼鱼逐帧坐标表（12 帧竖排，ox/oy 质心偏移，消除宽度变化和 stepY 累积误差）
+const FISH8_FRAMES = [
+  { x: 3, y: 0, w: 171, h: 122, ox: 81, oy: 52 },     // 帧 0
+  { x: 3, y: 127, w: 171, h: 122, ox: 81, oy: 52 },   // 帧 1
+  { x: 3, y: 255, w: 171, h: 120, ox: 80, oy: 52 },   // 帧 2
+  { x: 3, y: 382, w: 171, h: 120, ox: 79, oy: 52 },   // 帧 3
+  { x: 3, y: 507, w: 171, h: 121, ox: 80, oy: 53 },   // 帧 4
+  { x: 2, y: 632, w: 172, h: 123, ox: 81, oy: 53 },   // 帧 5
+  { x: 3, y: 757, w: 171, h: 123, ox: 81, oy: 52 },   // 帧 6
+  { x: 2, y: 883, w: 172, h: 122, ox: 82, oy: 51 },   // 帧 7
+  { x: 5, y: 1010, w: 169, h: 121, ox: 78, oy: 52 },  // 帧 8
+  { x: 6, y: 1134, w: 168, h: 122, ox: 78, oy: 55 },  // 帧 9
+  { x: 7, y: 1261, w: 167, h: 122, ox: 75, oy: 52 },  // 帧 10
+  { x: 6, y: 1387, w: 168, h: 120, ox: 78, oy: 51 },  // 帧 11
+]
+
+// shark1 (species 5) 鲨鱼逐帧坐标表（12 帧竖排 509×3240，ox/oy 质心偏移）
+const SHARK1_FRAMES = [
+  { x: 7, y: 35, w: 500, h: 205, ox: 337, oy: 97 },     // 帧 0
+  { x: 11, y: 305, w: 496, h: 207, ox: 336, oy: 99 },   // 帧 1
+  { x: 31, y: 574, w: 476, h: 210, ox: 317, oy: 102 },  // 帧 2
+  { x: 26, y: 844, w: 481, h: 211, ox: 324, oy: 101 },  // 帧 3
+  { x: 12, y: 1114, w: 495, h: 211, ox: 338, oy: 99 },  // 帧 4
+  { x: 5, y: 1385, w: 502, h: 208, ox: 341, oy: 96 },   // 帧 5
+  { x: 13, y: 1656, w: 494, h: 205, ox: 331, oy: 94 },  // 帧 6
+  { x: 11, y: 1926, w: 496, h: 205, ox: 333, oy: 94 },  // 帧 7
+  { x: 22, y: 2216, w: 483, h: 190, ox: 318, oy: 88 },  // 帧 8
+  { x: 83, y: 2430, w: 421, h: 263, ox: 259, oy: 121 }, // 帧 9
+  { x: 30, y: 2744, w: 479, h: 215, ox: 312, oy: 99 },  // 帧 10
+  { x: 76, y: 2977, w: 427, h: 258, ox: 269, oy: 122 }, // 帧 11
+]
+
+// shark2 (species 6) 金龙逐帧坐标表（12 帧竖排 516×3276，ox/oy 质心偏移，前 8 帧游动、后 4 帧死亡）
+const SHARK2_FRAMES = [
+  { x: 0, y: 30, w: 515, h: 216, ox: 331, oy: 106 },    // 帧 0
+  { x: 1, y: 302, w: 514, h: 219, ox: 332, oy: 110 },   // 帧 1
+  { x: 20, y: 575, w: 495, h: 221, ox: 316, oy: 112 },  // 帧 2
+  { x: 16, y: 848, w: 499, h: 222, ox: 321, oy: 110 },  // 帧 3
+  { x: 2, y: 1121, w: 513, h: 222, ox: 335, oy: 109 },  // 帧 4
+  { x: 0, y: 1394, w: 515, h: 220, ox: 333, oy: 106 },  // 帧 5
+  { x: 2, y: 1668, w: 513, h: 217, ox: 328, oy: 103 },  // 帧 6
+  { x: 1, y: 1941, w: 514, h: 217, ox: 329, oy: 104 },  // 帧 7
+  { x: 12, y: 2234, w: 500, h: 202, ox: 315, oy: 100 }, // 帧 8 死亡
+  { x: 71, y: 2457, w: 440, h: 269, ox: 259, oy: 124 }, // 帧 9 死亡
+  { x: 19, y: 2768, w: 497, h: 227, ox: 311, oy: 111 }, // 帧 10 死亡
+  { x: 65, y: 3007, w: 445, h: 267, ox: 270, oy: 128 }, // 帧 11 死亡
+]
 
 // ===== 图片预加载器 =====
 class ImageLoader {
@@ -102,6 +167,7 @@ export class Renderer {
     imageLoader.load(BG_URL)
     imageLoader.load(EFFECT_HIT_URL)
     imageLoader.load(EFFECT_CAPTURE_URL)
+    Object.values(SPRITE_ATLAS_URLS).forEach(url => imageLoader.load(url))
   }
 
   _initBubbles() {
@@ -178,13 +244,93 @@ export class Renderer {
 
   _drawFish(fish) {
     const { ctx } = this
+
+    // 序列帧动画配置（species → {帧数, 源帧宽, 源帧高, X步长, Y坐标, rotate标志}）
+    const SPRITE_CONFIGS = {
+      1: { frames: 10, sw: 36, sh: 68, stepX: 38, sy: 2, rotate: true, mirror: true },
+      2: { frames: 4, sw: 40, sh: 55, stepX: 42, sy: 2, rotate: true, mirror: false },
+      3: { frames: 10, sw: 50, sh: 75, stepX: 52, sy: 2, rotate: true, mirror: true },
+      7: { frames: 10, sw: 70, sh: 84, stepX: 72, sy: 2, rotate: true, mirror: false },
+    }
+
+    const cfg = SPRITE_CONFIGS[fish.speciesId]
+    if (cfg) {
+      const atlasImg = imageLoader.get(SPRITE_ATLAS_URLS[fish.speciesId])
+      if (atlasImg) {
+        ctx.save()
+        ctx.translate(fish.x, fish.y)
+
+        const angle = fish.angle != null ? fish.angle : Math.atan2(fish.vy, fish.vx)
+        ctx.rotate(angle)
+        if (Math.cos(angle) < 0) ctx.scale(1, -1)
+
+        const frameIndex = Math.floor(fish.age * 10) % cfg.frames
+        const sx = 2 + frameIndex * cfg.stepX
+        const sy = cfg.sy
+
+        if (cfg.rotate) {
+          if (cfg.mirror) ctx.scale(-1, 1)
+          ctx.rotate(-Math.PI / 2)
+          const scale = (fish.radius * 2.5) / cfg.sh
+          const drawW = cfg.sw * scale
+          const drawH = cfg.sh * scale
+          ctx.drawImage(atlasImg, sx, sy, cfg.sw, cfg.sh, -drawW / 2, -drawH / 2, drawW, drawH)
+        } else {
+          if (cfg.mirror) ctx.scale(-1, 1)
+          const scale = (fish.radius * 2.5) / cfg.sw
+          const drawW = cfg.sw * scale
+          const drawH = cfg.sh * scale
+          ctx.drawImage(atlasImg, sx, sy, cfg.sw, cfg.sh, -drawW / 2, -drawH / 2, drawW, drawH)
+        }
+
+        ctx.restore()
+        return
+      }
+    }
+
+    // 乌龟(4)、灯笼鱼(8)：逐帧质心对齐分支（消除尺寸变化引起的抖动）
+    const CENTROID_CONFIGS = {
+      4: { frames: FISH10_FRAMES, swimFrames: 6, refW: 164, scale: 2.6, mirror: false },
+      5: { frames: SHARK1_FRAMES, swimFrames: 8, refW: 500, scale: 2.6, mirror: false },
+      6: { frames: SHARK2_FRAMES, swimFrames: 8, refW: 515, scale: 2.6, mirror: false },
+      8: { frames: FISH8_FRAMES, swimFrames: 8, refW: 170, scale: 2.5, mirror: false },
+    }
+    const centCfg = CENTROID_CONFIGS[fish.speciesId]
+    if (centCfg) {
+      const atlasImg = imageLoader.get(SPRITE_ATLAS_URLS[fish.speciesId])
+      if (atlasImg) {
+        // 只循环正常游动帧，末尾的死亡帧（swimFrames 之后）不参与游动动画
+        const loopFrames = centCfg.swimFrames || centCfg.frames.length
+        const frameIndex = Math.floor(fish.age * 10) % loopFrames
+        const frame = centCfg.frames[frameIndex]
+
+        ctx.save()
+        ctx.translate(fish.x, fish.y)
+
+        const angle = fish.angle != null ? fish.angle : Math.atan2(fish.vy, fish.vx)
+        ctx.rotate(angle)
+        if (Math.cos(angle) < 0) ctx.scale(1, -1)
+
+        const scale = (fish.radius * centCfg.scale) / centCfg.refW
+        const drawW = frame.w * scale
+        const drawH = frame.h * scale
+        ctx.drawImage(atlasImg, frame.x, frame.y, frame.w, frame.h, -frame.ox * scale, -frame.oy * scale, drawW, drawH)
+
+        ctx.restore()
+        return
+      }
+    }
+
+    // 其他 species：原有静态 PNG 或降级色块
     const img = imageLoader.get(FISH_IMAGES[fish.speciesId])
 
     ctx.save()
     ctx.translate(fish.x, fish.y)
-    // 朝向：按水平速度翻转
-    const facing = fish.vx < 0 ? -1 : 1
-    ctx.scale(facing, 1)
+    // 朝向：让鱼头沿运动方向（曲线切线）。素材原图头朝右，
+    // 直接按 angle 旋转；当游向左半边时图会上下颠倒，故对该区间垂直翻转。
+    const angle = fish.angle != null ? fish.angle : Math.atan2(fish.vy, fish.vx)
+    ctx.rotate(angle)
+    if (Math.cos(angle) < 0) ctx.scale(1, -1)
 
     if (img) {
       // 鱼图中心锚点，按 radius 缩放绘制（源图约为推荐尺寸的 2×）
@@ -215,16 +361,6 @@ export class Renderer {
       ctx.fill()
     }
     ctx.restore()
-
-    // 赔率标签（中大型鱼才显示）
-    if (fish.payout >= 10) {
-      ctx.save()
-      ctx.fillStyle = '#ffd166'
-      ctx.font = 'bold 12px "Courier New", monospace'
-      ctx.textAlign = 'center'
-      ctx.fillText(`${FISH_NAMES[fish.speciesId] || ''}×${fish.payout}`, fish.x, fish.y - fish.radius - 6)
-      ctx.restore()
-    }
   }
 
   _getFallbackFishColor(speciesId) {

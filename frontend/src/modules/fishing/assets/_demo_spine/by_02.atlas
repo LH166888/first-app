@@ -1,0 +1,34 @@
+
+by_02.png
+size: 170,59
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fish_2_0
+  rotate: true
+  xy: 2, 2
+  size: 55, 40
+  orig: 55, 40
+  offset: 0, 0
+  index: -1
+fish_2_1
+  rotate: true
+  xy: 44, 2
+  size: 55, 40
+  orig: 55, 40
+  offset: 0, 0
+  index: -1
+fish_2_2
+  rotate: true
+  xy: 86, 2
+  size: 55, 40
+  orig: 55, 40
+  offset: 0, 0
+  index: -1
+fish_2_3
+  rotate: true
+  xy: 128, 2
+  size: 55, 40
+  orig: 55, 40
+  offset: 0, 0
+  index: -1

@@ -1,4 +1,16 @@
 {
+  "_field_guide": {
+    "fish_species字段说明": {
+      "id": "鱼种唯一标识，renderer/physics/game 内部用此 id 查找配置",
+      "payout_multiplier": "捕获倍率：捕到该鱼得 下注金额 × 此值 金币",
+      "health": "血量：×1 炮台需命中此次数才击杀",
+      "base_catch_rate_1x": "×1 炮台基础捕获概率（0.036 = 3.6%），炮倍越高有微弱加成",
+      "spawn_weight": "出场权重，全鱼权重之和约为 1，值越大越常出现",
+      "radius": "碰撞半径（像素），同时决定渲染大小；值越大鱼越大",
+      "cross_seconds": "从屏幕一端游到另一端的秒数；值越小游得越快",
+      "special_effect": "可选特效：splash_radius=溅射范围，coin_rain=金币雨，chain_explosion=连锁爆炸"
+    }
+  },
   "metadata": {
     "version": "1.0",
     "description": "Retro Fishing Arcade Game Configuration - 已 RTP 平衡调校（基于 AI-11 权威调优）",
@@ -24,6 +36,8 @@
       "health": 1,
       "base_catch_rate_1x": 0.465,
       "spawn_weight": 0.40,
+      "radius": 17,
+      "cross_seconds": 20,
       "description": "遍地都是，走量"
     },
     {
@@ -34,6 +48,8 @@
       "health": 2,
       "base_catch_rate_1x": 0.233,
       "spawn_weight": 0.22,
+      "radius": 17,
+      "cross_seconds": 22,
       "description": "主力中坚"
     },
     {
@@ -44,6 +60,8 @@
       "health": 3,
       "base_catch_rate_1x": 0.156,
       "spawn_weight": 0.14,
+      "radius": 20,
+      "cross_seconds": 25,
       "special_effect": "splash_radius",
       "description": "捕获自带小范围溅射"
     },
@@ -54,7 +72,9 @@
       "payout_multiplier": 10,
       "health": 5,
       "base_catch_rate_1x": 0.092,
-      "spawn_weight": 0.10,
+      "spawn_weight": 0.07,
+      "radius": 60,
+      "cross_seconds": 40,
       "description": "血厚，性价比看炮倍"
     },
     {
@@ -64,7 +84,9 @@
       "payout_multiplier": 25,
       "health": 12,
       "base_catch_rate_1x": 0.036,
-      "spawn_weight": 0.06,
+      "spawn_weight": 0.04,
+      "radius": 180,
+      "cross_seconds": 40,
       "description": "高价值，追踪难"
     },
     {
@@ -74,7 +96,9 @@
       "payout_multiplier": 60,
       "health": 25,
       "base_catch_rate_1x": 0.015,
-      "spawn_weight": 0.035,
+      "spawn_weight": 0.005,
+      "radius": 180,
+      "cross_seconds": 40,
       "description": "稀有大鱼，全场焦点"
     },
     {
@@ -85,6 +109,8 @@
       "health": 8,
       "base_catch_rate_1x": 0.015,
       "spawn_weight": 0.03,
+      "radius": 28,
+      "cross_seconds": 20,
       "special_effect": "coin_rain",
       "description": "捕获吐金币雨，怀旧标志物"
     },
@@ -96,6 +122,8 @@
       "health": 6,
       "base_catch_rate_1x": 0.044,
       "spawn_weight": 0.015,
+      "radius": 60,
+      "cross_seconds": 30,
       "special_effect": "chain_explosion",
       "description": "捕获后引爆周围小鱼，爽点"
     }

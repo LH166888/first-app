@@ -116,4 +116,35 @@ defineEmits(['set-multiplier', 'toggle-pause', 'exit'])
 .ctrl.exit {
   background: #e03131;
 }
+
+/* 手机端 / 矮屏（横屏手机高度小）：收紧 HUD，单行不换行，给画布腾高度 */
+@media (max-width: 820px), (max-height: 480px) {
+  .hud {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 5px 10px;
+  }
+  .hud-group {
+    gap: 10px;
+  }
+  .k {
+    font-size: 0.6rem;
+  }
+  .v {
+    font-size: 1rem;
+  }
+  .hud-mult {
+    gap: 4px;
+  }
+  .mult-btn {
+    min-width: 34px;
+    padding: 4px 5px;
+    font-size: 0.8rem;
+    border-width: 1px;
+  }
+  .ctrl {
+    padding: 5px 9px;
+    font-size: 0.8rem;
+  }
+}
 </style>

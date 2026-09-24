@@ -25,35 +25,90 @@ export function pickSpecies(speciesList, rnd = Math.random) {
 }
 
 /**
- * 生成一条鱼。从左/右/上三侧随机入场，沿直线水平/下潜移动，叠加正弦摆动。
- * 大鱼（赔率高）体型更大、速度更慢。
+ * 三次贝塞尔：给定 4 个控制点与参数 t∈[0,1]，返回曲线上的坐标。
+ */
+function cubicBezier(p0, p1, p2, p3, t) {
+  const mt = 1 - t
+  const a = mt * mt * mt
+  const b = 3 * mt * mt * t
+  const c = 3 * mt * t * t
+  const d = t * t * t
+  return {
+    x: a * p0.x + b * p1.x + c * p2.x + d * p3.x,
+    y: a * p0.y + b * p1.y + c * p2.y + d * p3.y,
+  }
+}
+
+/**
+ * 三次贝塞尔的一阶导数（切线向量），用于确定鱼头朝向。
+ */
+function cubicBezierTangent(p0, p1, p2, p3, t) {
+  const mt = 1 - t
+  const a = 3 * mt * mt
+  const b = 6 * mt * t
+  const c = 3 * t * t
+  return {
+    x: a * (p1.x - p0.x) + b * (p2.x - p1.x) + c * (p3.x - p2.x),
+    y: a * (p1.y - p0.y) + b * (p2.y - p1.y) + c * (p3.y - p2.y),
+  }
+}
+
+/**
+ * 为一条鱼生成一条穿越屏幕的贝塞尔曲线路径（4 个控制点）。
+ * 起点/终点各自落在屏幕四条边之一（且不同边）的随机位置，方向任意（横/竖/斜）；
+ * 中间两个控制点在连线基础上施加垂直偏移，形成自然的弧线/S 形。
+ */
+function generatePath(w, h, radius, rnd) {
+  const margin = radius + 60
+  // 在指定边上取屏幕外一点。edge: 0=上 1=右 2=下 3=左
+  const pointOnEdge = (edge) => {
+    switch (edge) {
+      case 0: return { x: rnd() * w, y: -margin }           // 上边（屏幕外上方）
+      case 1: return { x: w + margin, y: rnd() * h }         // 右边
+      case 2: return { x: rnd() * w, y: h + margin }         // 下边
+      default: return { x: -margin, y: rnd() * h }           // 左边
+    }
+  }
+
+  // 随机入场边，出场边取另一条不同的边（0~3 里排除入场边）
+  const inEdge = Math.floor(rnd() * 4)
+  const outEdge = (inEdge + 1 + Math.floor(rnd() * 3)) % 4
+  const p0 = pointOnEdge(inEdge)
+  const p3 = pointOnEdge(outEdge)
+
+  // 两个中间控制点：沿连线分布，并沿「连线法向」施加随机偏移形成弯曲。
+  // 法向随连线方向旋转，故斜向轨迹也能自然弯曲。
+  const lerp = (a, b, t) => a + (b - a) * t
+  const dx = p3.x - p0.x
+  const dy = p3.y - p0.y
+  const len = Math.hypot(dx, dy) || 1
+  const nx = -dy / len // 连线法向单位向量
+  const ny = dx / len
+  const bend = (rnd() - 0.5) * len * 0.45  // 弯曲强度与连线长度成比例
+  const bend2 = (rnd() - 0.5) * len * 0.45
+  const p1 = { x: lerp(p0.x, p3.x, 0.33) + nx * bend, y: lerp(p0.y, p3.y, 0.33) + ny * bend }
+  const p2 = { x: lerp(p0.x, p3.x, 0.66) + nx * bend2, y: lerp(p0.y, p3.y, 0.66) + ny * bend2 }
+
+  return [p0, p1, p2, p3]
+}
+
+/**
+ * 生成一条鱼。沿一条随机贝塞尔曲线穿越屏幕，朝向自动对齐曲线切线。
+ * 大鱼（赔率高）体型更大、速度更慢（穿越时间更长）。
  */
 export function spawnFish(species, w, h, rnd = Math.random) {
-  const radius = 16 + Math.min(30, species.payout_multiplier * 0.35)
-  // 赔率越高越慢：60~90 px/s 之间
-  const baseSpeed = 90 - Math.min(45, species.payout_multiplier * 0.6)
-  const side = Math.floor(rnd() * 3)
+  // 体型：优先取 config 里各鱼自定义的 radius，未配置则回退按倍率计算的默认公式
+  const radius = species.radius != null
+    ? species.radius
+    : 16 + Math.min(30, species.payout_multiplier * 0.35)
+  // 速度：优先取 config 里各鱼自定义的 cross_seconds（穿屏秒数，越小越快），未配置则回退按倍率计算的默认公式
+  const duration = species.cross_seconds != null
+    ? species.cross_seconds
+    : 30 + species.payout_multiplier * 0.17
+  const path = generatePath(w, h, radius, rnd)
 
-  let x, y, vx, vy
-  if (side === 0) {
-    // 左侧入场，向右游
-    x = -radius
-    y = rnd() * (h * 0.7) + h * 0.1
-    vx = baseSpeed
-    vy = 0
-  } else if (side === 1) {
-    // 右侧入场，向左游
-    x = w + radius
-    y = rnd() * (h * 0.7) + h * 0.1
-    vx = -baseSpeed
-    vy = 0
-  } else {
-    // 顶部入场，向下潜
-    x = rnd() * w
-    y = -radius
-    vx = (rnd() - 0.5) * baseSpeed
-    vy = baseSpeed * 0.6
-  }
+  const p = cubicBezier(path[0], path[1], path[2], path[3], 0)
+  const tan = cubicBezierTangent(path[0], path[1], path[2], path[3], 0)
 
   return {
     id: `${species.id}-${Math.floor(rnd() * 1e9)}`,
@@ -61,29 +116,49 @@ export function spawnFish(species, w, h, rnd = Math.random) {
     payout: species.payout_multiplier,
     baseCatchRate: species.base_catch_rate_1x,
     specialEffect: species.special_effect || null,
-    x,
-    y,
-    vx,
-    vy,
+    x: p.x,
+    y: p.y,
+    // 保留 vx 供旧逻辑/兼容（朝向以 angle 为准）
+    vx: tan.x,
+    vy: tan.y,
+    angle: Math.atan2(tan.y, tan.x),
     radius,
     age: 0,
-    wobbleAmp: vy === 0 ? radius * 0.5 : 0, // 水平游动才上下摆
-    wobbleFreq: 2 + rnd() * 2,
+    path,
+    duration,
+    // 沿切线法向的轻微摆动，模拟鱼身自然游动（0 = 关闭，沿轨迹平滑前进）
+    wobbleAmp: 0,
+    wobbleFreq: 3 + rnd() * 2,
     phase: rnd() * Math.PI * 2,
   }
 }
 
 /**
- * 推进一条鱼一帧。返回是否仍在场内（false 表示已游出边界可回收）。
+ * 推进一条鱼一帧。沿贝塞尔曲线按 age/duration 前进，
+ * 位置叠加沿法向的正弦摆动，朝向取曲线切线。
+ * 返回是否仍存活（t<1 表示尚未走完全程）。
  */
 export function stepFish(fish, dt, w, h) {
   fish.age += dt
-  fish.x += fish.vx * dt
-  const wob = fish.wobbleAmp ? Math.sin(fish.age * fish.wobbleFreq + fish.phase) * fish.wobbleAmp * dt * fish.wobbleFreq : 0
-  fish.y += fish.vy * dt + wob
+  const t = fish.age / fish.duration
+  if (t >= 1) return false // 走完整条曲线，回收
 
-  const m = fish.radius + 40
-  return fish.x > -m && fish.x < w + m && fish.y > -m && fish.y < h + m
+  const [p0, p1, p2, p3] = fish.path
+  const pos = cubicBezier(p0, p1, p2, p3, t)
+  const tan = cubicBezierTangent(p0, p1, p2, p3, t)
+  fish.angle = Math.atan2(tan.y, tan.x)
+  fish.vx = tan.x
+  fish.vy = tan.y
+
+  // 沿切线法向做正弦摆动（法向 = 切线旋转 90°，归一化后乘幅度）
+  const len = Math.hypot(tan.x, tan.y) || 1
+  const nx = -tan.y / len
+  const ny = tan.x / len
+  const wob = Math.sin(fish.age * fish.wobbleFreq + fish.phase) * fish.wobbleAmp
+  fish.x = pos.x + nx * wob
+  fish.y = pos.y + ny * wob
+
+  return true
 }
 
 /**

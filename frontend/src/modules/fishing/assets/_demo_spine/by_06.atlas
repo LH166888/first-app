@@ -1,0 +1,90 @@
+
+by_06.png
+size: 1034,88
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fish5/fish_5_0
+  rotate: false
+  xy: 2, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_1
+  rotate: false
+  xy: 88, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_10
+  rotate: false
+  xy: 862, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_11
+  rotate: false
+  xy: 948, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_2
+  rotate: false
+  xy: 174, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_3
+  rotate: false
+  xy: 260, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_4
+  rotate: false
+  xy: 346, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_5
+  rotate: false
+  xy: 432, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_6
+  rotate: false
+  xy: 518, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_7
+  rotate: false
+  xy: 604, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_8
+  rotate: false
+  xy: 690, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1
+fish5/fish_5_9
+  rotate: false
+  xy: 776, 2
+  size: 84, 84
+  orig: 84, 84
+  offset: 0, 0
+  index: -1

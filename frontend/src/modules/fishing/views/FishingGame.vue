@@ -22,11 +22,18 @@
         <div v-if="toast" class="toast">{{ toast }}</div>
       </transition>
     </div>
+
+    <!-- 手机竖屏引导：提示旋转横屏（游戏此时已自动暂停） -->
+    <div v-if="showRotate" class="rotate-overlay">
+      <div class="rotate-icon">📱</div>
+      <p class="rotate-text">请横屏使用</p>
+      <p class="rotate-sub">旋转手机以获得最佳游戏体验</p>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import config from '../config/games-fishing-config.json'
 import GameHUD from '../components/GameHUD.vue'
@@ -49,9 +56,43 @@ const toast = ref('')
 let ending = false
 let toastTimer = null
 
+// ---- 手机横竖屏 ----
+const isMobile = ref(false)
+const isPortrait = ref(false)
+// 手机端且竖屏时，提示旋转横屏并遮住游戏
+const showRotate = computed(() => isMobile.value && isPortrait.value)
+let autoPausedByOrientation = false // 因竖屏自动暂停（区别于用户手动暂停）
+let mqPortrait = null
+let mqCoarse = null
+
+function updateOrientation() {
+  isMobile.value = mqCoarse ? mqCoarse.matches : false
+  isPortrait.value = mqPortrait ? mqPortrait.matches : false
+  if (showRotate.value) {
+    // 进入竖屏：若非用户手动暂停，则自动暂停引擎，避免遮挡时白白消耗金币
+    if (!paused.value && !autoPausedByOrientation) {
+      canvasRef.value?.pause()
+      autoPausedByOrientation = true
+    }
+  } else if (autoPausedByOrientation) {
+    // 回到横屏：恢复之前的自动暂停
+    canvasRef.value?.resume()
+    autoPausedByOrientation = false
+  }
+}
+
 onMounted(() => {
   // 子组件 GameCanvas 已挂载，引擎就绪，直接开局
   canvasRef.value.start(fishingStore.coins)
+  // 开局后再判断朝向，竖屏则立即自动暂停
+  mqPortrait = window.matchMedia('(orientation: portrait)')
+  mqCoarse = window.matchMedia('(pointer: coarse)')
+  mqPortrait.addEventListener('change', updateOrientation)
+  updateOrientation()
+})
+
+onBeforeUnmount(() => {
+  if (mqPortrait) mqPortrait.removeEventListener('change', updateOrientation)
 })
 
 function onUpdate(s) {
@@ -177,5 +218,51 @@ async function endSession(result) {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* 手机竖屏旋转引导层 */
+.rotate-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  background: #000814;
+  color: #ffd166;
+}
+.rotate-icon {
+  font-size: 64px;
+  animation: rotate-hint 1.8s ease-in-out infinite;
+}
+.rotate-text {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+.rotate-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #9fb3c8;
+}
+@keyframes rotate-hint {
+  0%, 45% { transform: rotate(0deg); }
+  65%, 100% { transform: rotate(-90deg); }
+}
+
+/* 手机端（触屏设备）：游戏页占满整屏，避免平台顶栏抢占高度 */
+@media (pointer: coarse) {
+  .fishing-game {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    min-height: 0;
+    height: 100vh;
+    height: 100dvh;
+  }
 }
 </style>

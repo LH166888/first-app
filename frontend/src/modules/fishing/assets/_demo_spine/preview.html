@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spine 素材序列帧预览 · by_01</title>
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: linear-gradient(180deg, #04122b 0%, #062b4d 48%, #0a3a5c 100%);
+    color: #cfe8ff;
+    padding: 24px;
+  }
+  h1 { font-size: 18px; font-weight: 700; }
+  .note { font-size: 13px; color: #9fc4e0; line-height: 1.7; margin-bottom: 20px; }
+  .row { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; margin: 18px 0; }
+  .cell { text-align: center; }
+  .cell canvas {
+    background: rgba(6, 30, 60, 0.6);
+    border: 1px solid rgba(120, 180, 230, 0.25);
+    border-radius: 8px;
+    image-rendering: auto;
+  }
+  .cell .label { font-size: 12px; color: #8fb8d8; margin-top: 8px; }
+  .pixelated canvas { image-rendering: pixelated; }
+  button {
+    background: #0e6ba8; color: #fff; border: none; border-radius: 6px;
+    padding: 6px 14px; cursor: pointer; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+  <h1>🐟 Spine 素材序列帧预览（by_01「红豆鱼」游泳动画）</h1>
+  <p class="note">
+    左起：<b>68px 原始尺寸</b>（素材真实分辨率）→ <b>150px 游戏实际尺寸</b>（当前游戏里鱼的大致显示大小）→ <b>300px 放大</b>（看拉大后糊不糊）。<br />
+    10 帧 run 动画循环播放。上排用平滑缩放（浏览器默认），下排用像素化缩放（不插值），对比两种放大质感。
+  </p>
+
+  <div class="row" id="smooth"></div>
+  <div class="row pixelated" id="pixel"></div>
+
+<script>
+// ==== atlas 帧定义（来自 by_01.atlas，run 动画 10 帧）====
+// 图集 534×72；每帧 orig 68×36，rotate:true（图集中逆时针旋转 90° 存储，占 36 宽 × 68 高）
+const ATLAS_W = 534, ATLAS_H = 72;
+const ORIG_W = 68, ORIG_H = 36;
+const FRAMES = [];
+for (let i = 0; i < 10; i++) {
+  FRAMES.push({ sx: 2 + i * 38, sy: 2 }); // packed 左上角
+}
+
+// ==== 加载图集 ====
+const atlasImg = new Image();
+atlasImg.onload = () => {
+  startAnimation();
+};
+atlasImg.src = 'by_01.png';
+
+// ==== 创建 3 组 canvas（3 种尺寸）====
+const sizes = [
+  { w: ORIG_W, h: ORIG_H, label: '68px 原始' },
+  { w: 150, h: Math.round(150 * ORIG_H / ORIG_W), label: '150px 游戏尺寸' },
+  { w: 300, h: Math.round(300 * ORIG_H / ORIG_W), label: '300px 放大' },
+];
+
+const canvases = { smooth: [], pixel: [] };
+['smooth', 'pixel'].forEach(mode => {
+  const row = document.getElementById(mode);
+  const title = document.createElement('div');
+  title.className = 'label';
+  title.textContent = mode === 'smooth' ? '▼ 平滑缩放' : '▼ 像素化缩放';
+  title.style.width = '100%';
+  title.style.marginBottom = '8px';
+  row.appendChild(title);
+
+  sizes.forEach(sz => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const cvs = document.createElement('canvas');
+    cvs.width = sz.w;
+    cvs.height = sz.h;
+    const lbl = document.createElement('div');
+    lbl.className = 'label';
+    lbl.textContent = sz.label;
+    cell.appendChild(cvs);
+    cell.appendChild(lbl);
+    row.appendChild(cell);
+    canvases[mode].push({ canvas: cvs, ctx: cvs.getContext('2d') });
+  });
+});
+
+// ==== 动画循环 ====
+// 直接从图集绘制（不经 toDataURL，避免 file:// 污染 canvas）：
+// 帧在图集中逆时针旋转 90° 存储（占 36 宽 × 68 高），绘制时顺时针转回。
+let frameIndex = 0;
+function drawFrameTo(ctx, canvas, f) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(-Math.PI / 2); // 转回正立方向
+  // 源区域在图集中为 36 宽 × 68 高（旋转存储）。旋转画布 90° 后宽高互换，
+  // 因此本地绘制矩形用 canvas.height 作宽、canvas.width 作高，最终屏幕上呈现 W×H。
+  const dw = canvas.height;
+  const dh = canvas.width;
+  ctx.drawImage(atlasImg, f.sx, f.sy, 36, 68, -dw / 2, -dh / 2, dw, dh);
+  ctx.restore();
+}
+function startAnimation() {
+  setInterval(() => {
+    frameIndex = (frameIndex + 1) % FRAMES.length;
+    const f = FRAMES[frameIndex];
+    ['smooth', 'pixel'].forEach(mode => {
+      canvases[mode].forEach(({ canvas, ctx }) => {
+        drawFrameTo(ctx, canvas, f);
+      });
+    });
+  }, 100); // 10fps
+}
+</script>
+</body>
+</html>

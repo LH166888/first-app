@@ -1,0 +1,90 @@
+
+by_05.png
+size: 228,154
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fish4/fish_4_0
+  rotate: false
+  xy: 122, 32
+  size: 62, 36
+  orig: 80, 56
+  offset: 8, 14
+  index: -1
+fish4/fish_4_1
+  rotate: false
+  xy: 1, 4
+  size: 62, 38
+  orig: 80, 56
+  offset: 8, 12
+  index: -1
+fish4/fish_4_10
+  rotate: true
+  xy: 186, 26
+  size: 63, 30
+  orig: 80, 56
+  offset: 8, 15
+  index: -1
+fish4/fish_4_11
+  rotate: true
+  xy: 194, 91
+  size: 62, 33
+  orig: 80, 56
+  offset: 8, 15
+  index: -1
+fish4/fish_4_2
+  rotate: true
+  xy: 1, 44
+  size: 63, 42
+  orig: 80, 52
+  offset: 8, 5
+  index: -1
+fish4/fish_4_3
+  rotate: false
+  xy: 65, 111
+  size: 63, 42
+  orig: 80, 54
+  offset: 8, 7
+  index: -1
+fish4/fish_4_4
+  rotate: false
+  xy: 130, 110
+  size: 62, 43
+  orig: 80, 56
+  offset: 8, 7
+  index: -1
+fish4/fish_4_5
+  rotate: false
+  xy: 1, 109
+  size: 62, 44
+  orig: 78, 56
+  offset: 8, 6
+  index: -1
+fish4/fish_4_6
+  rotate: true
+  xy: 78, 47
+  size: 62, 42
+  orig: 80, 56
+  offset: 8, 7
+  index: -1
+fish4/fish_4_7
+  rotate: false
+  xy: 122, 70
+  size: 62, 38
+  orig: 80, 56
+  offset: 8, 8
+  index: -1
+fish4/fish_4_8
+  rotate: true
+  xy: 45, 44
+  size: 63, 31
+  orig: 80, 56
+  offset: 8, 13
+  index: -1
+fish4/fish_4_9
+  rotate: false
+  xy: 65, 1
+  size: 63, 29
+  orig: 80, 56
+  offset: 8, 15
+  index: -1

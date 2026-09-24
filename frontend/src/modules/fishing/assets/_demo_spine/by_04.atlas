@@ -1,0 +1,104 @@
+
+by_04.png
+size: 305,150
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+lanzaoyu/lanzaoyu_01
+  rotate: true
+  xy: 1, 76
+  size: 73, 50
+  orig: 74, 70
+  offset: 1, 10
+  index: -1
+lanzaoyu/lanzaoyu_02
+  rotate: true
+  xy: 1, 1
+  size: 73, 50
+  orig: 74, 70
+  offset: 1, 10
+  index: -1
+lanzaoyu/lanzaoyu_03
+  rotate: true
+  xy: 53, 1
+  size: 73, 48
+  orig: 74, 70
+  offset: 1, 11
+  index: -1
+lanzaoyu/lanzaoyu_04
+  rotate: false
+  xy: 153, 109
+  size: 73, 40
+  orig: 74, 70
+  offset: 1, 14
+  index: -1
+lanzaoyu/lanzaoyu_05
+  rotate: false
+  xy: 228, 78
+  size: 73, 32
+  orig: 74, 70
+  offset: 1, 18
+  index: -1
+lanzaoyu/lanzaoyu_06
+  rotate: true
+  xy: 277, 3
+  size: 73, 27
+  orig: 74, 70
+  offset: 1, 21
+  index: -1
+lanzaoyu/lanzaoyu_07
+  rotate: false
+  xy: 153, 78
+  size: 73, 29
+  orig: 74, 70
+  offset: 1, 20
+  index: -1
+lanzaoyu/lanzaoyu_08
+  rotate: true
+  xy: 241, 3
+  size: 73, 34
+  orig: 74, 70
+  offset: 1, 18
+  index: -1
+lanzaoyu/lanzaoyu_09
+  rotate: true
+  xy: 199, 3
+  size: 73, 40
+  orig: 74, 70
+  offset: 1, 15
+  index: -1
+lanzaoyu/lanzaoyu_10
+  rotate: true
+  xy: 103, 1
+  size: 73, 47
+  orig: 74, 70
+  offset: 1, 12
+  index: -1
+lanzaoyu/lanzaoyu_catch_01
+  rotate: true
+  xy: 53, 76
+  size: 73, 49
+  orig: 74, 70
+  offset: 1, 11
+  index: -1
+lanzaoyu/lanzaoyu_catch_02
+  rotate: false
+  xy: 228, 112
+  size: 73, 37
+  orig: 74, 70
+  offset: 1, 18
+  index: -1
+lanzaoyu/lanzaoyu_catch_03
+  rotate: true
+  xy: 152, 3
+  size: 72, 45
+  orig: 74, 70
+  offset: 2, 7
+  index: -1
+lanzaoyu/lanzaoyu_catch_04
+  rotate: true
+  xy: 104, 77
+  size: 72, 47
+  orig: 74, 70
+  offset: 2, 7
+  index: -1

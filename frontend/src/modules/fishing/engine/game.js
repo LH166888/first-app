@@ -19,7 +19,7 @@ import * as P from './physics'
 const AMP = config.cannon_mechanics.catch_rate_amplification
 const COST_PER_SHOT = config.cannon_mechanics.cannon_cost_per_shot
 const SPECIES = config.fish_species
-const MAX_FISH = 14 // 屏上最大鱼数，控制性能与观感
+const MAX_FISH = 18 // 屏上最大鱼数，控制性能与观感
 
 export class FishingGame {
   constructor(canvas, callbacks = {}) {
@@ -56,7 +56,7 @@ export class FishingGame {
     this._rafId = null
     this._lastTs = 0
     this._spawnTimer = 0
-    this._spawnInterval = 0.9 // 秒
+    this._spawnInterval = 0.65 // 秒
     this._loop = this._loop.bind(this)
   }
 
